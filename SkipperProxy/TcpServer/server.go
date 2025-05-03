@@ -15,8 +15,9 @@ type Server struct {
 	//good practice to use bytes
 	MessageChanel chan []byte
 	// todo: a connection map to help later with the wildcard and redirecting routing
-	connMutex     sync.Mutex
-	connectionMap map[string]net.Conn
+	ConnMutext     sync.Mutex
+	ConnectionMap map[string]net.Conn
+	RequestChannel chan TcpMessage
 }
 
 func NewServer(listenAddr string) *Server {
@@ -24,7 +25,8 @@ func NewServer(listenAddr string) *Server {
 		listenAdrr:    listenAddr,
 		quitch:        make(chan struct{}),
 		MessageChanel: make(chan []byte, 10),
-		connectionMap: make(map[string]net.Conn),
+		ConnectionMap: make(map[string]net.Conn),
+		RequestChannel: make(chan TcpMessage),
 	}
 }
 
@@ -55,11 +57,11 @@ func (s *Server) AcceptLoop() {
 		}
 		fmt.Println("New connection", conn.RemoteAddr())
 		addr := conn.RemoteAddr().String()
-		s.connMutex.Lock()
-		s.connectionMap[addr] = conn
-		s.connMutex.Unlock()
+		s.ConnMutext.Lock()
+		s.ConnectionMap[addr] = conn
+		s.ConnMutext.Unlock()
 
-		fmt.Println(s.connectionMap)
+		fmt.Println(s.ConnectionMap)
 		// handling every connection on a different goroutine
 		go s.ReadLoop(conn)
 	}
@@ -70,9 +72,9 @@ func (s *Server) ReadLoop(conn net.Conn) {
 	defer func() {
 		conn.Close()
 		addr := conn.RemoteAddr().String()
-		s.connMutex.Lock()
-		delete(s.connectionMap, addr)
-		s.connMutex.Unlock()
+		s.ConnMutext.Lock()
+		delete(s.ConnectionMap, addr)
+		s.ConnMutext.Unlock()
 		fmt.Println("Connection closed:", addr)
 	}()
 

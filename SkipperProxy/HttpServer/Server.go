@@ -1,6 +1,7 @@
 package HttpServer
 
 import (
+	tcpserver "SkipperTunnelProxy/TcpServer"
 	"context"
 	"fmt"
 	"net/http"
@@ -10,15 +11,17 @@ type Server struct {
 	port   int
 	Router *Router
 	// middlewares  []Middleware
-	errorHandler ErrorHandler
-	server       *http.Server
+	errorHandler      ErrorHandler
+	server            *http.Server
+	TcpRequestChannel chan tcpserver.TcpMessage
 }
 
 type ServerOption func(*Server)
 
-func NewServer(port int) *Server {
+func NewServer(port int, ch chan tcpserver.TcpMessage) *Server {
 	s := &Server{
-		port: port,
+		port:              port,
+		TcpRequestChannel: ch,
 	}
 
 	s.Router = NewRouter(s)
