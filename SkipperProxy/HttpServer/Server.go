@@ -19,7 +19,6 @@ type ServerOption func(*Server)
 func NewServer(port int) *Server {
 	s := &Server{
 		port: port,
-		// middlewares: []Middleware{},
 	}
 
 	s.Router = NewRouter(s)

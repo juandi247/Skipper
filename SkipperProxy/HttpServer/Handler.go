@@ -55,9 +55,13 @@ func ParseHttpRequest(w http.ResponseWriter, r *http.Request) {
 		Header:    headers,
 		Body:      string(bodyBytes),
 	}
-	// respond for now with the json parsed
+	requestBytes, err := json.Marshal(request)
+	if err != nil {
+		http.Error(w, "Error al convertir la solicitud a JSON", http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(request)
+	json.NewEncoder(w).Encode("Mensaje enviado a TCP Server")
 
 }
 
@@ -80,7 +84,8 @@ func ParsePost(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// ? just for testing the server
+
+// ! just for testing the server
 func TimeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	currentTime := time.Now().Format(time.RFC3339)

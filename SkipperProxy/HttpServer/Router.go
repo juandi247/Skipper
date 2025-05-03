@@ -37,6 +37,23 @@ if r.routes[method]== nil{
 r.routes[method][path] = handler
 }
 
+func (r *Router) Any(path string, handler Handler) {
+	methods := []string{
+		http.MethodGet,
+		http.MethodPost,
+		http.MethodPut,
+		http.MethodDelete,
+		http.MethodPatch,
+		http.MethodOptions,
+		http.MethodHead,
+		http.MethodConnect,
+		http.MethodTrace,
+	}
+
+	for _, method := range methods {
+		r.addRoute(method, path, handler)
+	}
+}
 
 
 func (r *Router) GET(path string, handler Handler) {

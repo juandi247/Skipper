@@ -1,53 +1,63 @@
 package main
 
 import (
-	// "SkipperTunnelProxy/HttpServer"
-
-	tcpserver "SkipperTunnelProxy/TcpServer"
-	// "context"
-	// "fmt"
-	// "log"
-	// "os"
-	// "os/signal"
-	// "syscall"
-	// "time"
+	"SkipperTunnelProxy/HttpServer"
+ "SkipperTunnelProxy/TcpServer"
+	"context"
+	"fmt"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 func main() {
-	// s := HttpServer.NewServer(8080)
+	server := tcpserver.NewServer(":9000")
+	// Run http server
+	s := HttpServer.NewServer(8080)
 
 	// s.Router.GET("/", HttpServer.HomeHandler)
-
 	// s.Router.GET("/time", HttpServer.TimeHandler)
 	// s.Router.POST("/coso", HttpServer.ParsePost)
 	// s.Router.GET("/aa", HttpServer.ParseHttpRequest)
+	s.Router.Any("/*", HttpServer.ParseHttpRequest)
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
-	// stop := make(chan os.Signal, 1)
+// ! Goroutine for running the server
+	go func() {
+		if err := s.Run(); err != nil {
+			log.Fatalf("Error starting server: %v", err)
+		}
+	}()
 
-	// signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	fmt.Println("Server is running on http://localhost:8080")
 
-	// go func() {
-	// 	if err := s.Run(); err != nil {
-	// 		log.Fatalf("Error starting server: %v", err)
-	// 	}
-	// }()
 
-	// fmt.Println("Server is running on http://localhost:8080")
 
-	// //Interrupt signal
-	// <-stop
+// ! Run TCP server
 
-	// fmt.Println("Shutting down server...")
+	go func() {
+		for msg := range server.MessageChanel {
+			fmt.Println("message received", string(msg))
+		}
+	}()
+	go server.Start()
 
-	// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	// defer cancel()
 
-	// if err := s.Shutdown(ctx); err != nil {
-	// 	log.Fatalf("Server forced to shutdown: %v", err)
-	// }
 
-	// fmt.Println("Server gracefully stopped")
 
-	tcpserver.StartTcp()
 
+	// STOPPPP the http when getting the STOP
+	//Interrupt signal
+	<-stop
+	fmt.Println("Shutting down server...")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := s.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
 }
+
+
