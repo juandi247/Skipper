@@ -6,7 +6,7 @@ import (
 )
 
 // thats to receive data onn a buffer and readed
-func HandleClient(conn net.Conn) {
+func HandleReceive(conn net.Conn) {
 	buffer := make([]byte, 1024)
 
 	for {
@@ -15,13 +15,11 @@ func HandleClient(conn net.Conn) {
 			fmt.Print(err)
 			return
 		}
-
 		fmt.Printf("Received: %s\n", buffer[:n])
 	}
 }
 
 func HandleSend(conn net.Conn) {
-
 	data := []byte("Hello, Server!\n")
 	_, err := conn.Write(data)
 
@@ -29,6 +27,5 @@ func HandleSend(conn net.Conn) {
 		fmt.Println("Error:", err)
 		return
 	}
-
-	fmt.Println("sendet")
+	fmt.Println("sendet Hello server message")
 }

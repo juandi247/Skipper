@@ -60,8 +60,11 @@ func ParseHttpRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error al convertir la solicitud a JSON", http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Println(requestBytes)
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode("Mensaje enviado a TCP Server")
+	json.NewEncoder(w).Encode(request)
 
 }
 
@@ -83,7 +86,6 @@ func ParsePost(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, t.Test)
 
 }
-
 
 // ! just for testing the server
 func TimeHandler(w http.ResponseWriter, r *http.Request) {

@@ -2,7 +2,7 @@ package main
 
 import (
 	"SkipperTunnelProxy/HttpServer"
- "SkipperTunnelProxy/TcpServer"
+ 	"SkipperTunnelProxy/TcpServer"
 	"context"
 	"fmt"
 	"log"
@@ -16,11 +16,6 @@ func main() {
 	server := tcpserver.NewServer(":9000")
 	// Run http server
 	s := HttpServer.NewServer(8080)
-
-	// s.Router.GET("/", HttpServer.HomeHandler)
-	// s.Router.GET("/time", HttpServer.TimeHandler)
-	// s.Router.POST("/coso", HttpServer.ParsePost)
-	// s.Router.GET("/aa", HttpServer.ParseHttpRequest)
 	s.Router.Any("/*", HttpServer.ParseHttpRequest)
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
@@ -37,16 +32,12 @@ func main() {
 
 
 // ! Run TCP server
-
 	go func() {
 		for msg := range server.MessageChanel {
 			fmt.Println("message received", string(msg))
 		}
 	}()
 	go server.Start()
-
-
-
 
 
 	// STOPPPP the http when getting the STOP

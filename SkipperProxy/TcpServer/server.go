@@ -14,7 +14,6 @@ type Server struct {
 	quitch     chan struct{}
 	//good practice to use bytes
 	MessageChanel chan []byte
-
 	// todo: a connection map to help later with the wildcard and redirecting routing
 	connMutex     sync.Mutex
 	connectionMap map[string]net.Conn
@@ -30,12 +29,10 @@ func NewServer(listenAddr string) *Server {
 }
 
 func (s *Server) Start() error {
-
 	ln, err := net.Listen("tcp", s.listenAdrr)
 	if err != nil {
 		return err
 	}
-
 	defer ln.Close()
 	s.ln = ln
 
@@ -45,7 +42,6 @@ func (s *Server) Start() error {
 
 	// close the channel when we stop the server
 	close(s.quitch)
-
 	return nil
 }
 
@@ -85,9 +81,12 @@ func (s *Server) ReadLoop(conn net.Conn) {
 		numberOfBytes, err := conn.Read(buffer)
 		if err != nil {
 			fmt.Println("read error", err)
-			continue
+			break
 		}
+		// write to the tcp client
+		conn.Write([]byte(string("te escribo de vuelta!")))
 
+		// send the message received to the channel
 		s.MessageChanel <- buffer[:numberOfBytes]
 	}
 
