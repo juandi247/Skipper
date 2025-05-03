@@ -24,14 +24,14 @@ func handleTcpConnection(c net.Conn){
 			break
 		}
 
-		result:= strconv.Itoa(random())+"\n"
+		result:= strconv.Itoa(Random())+"\n"
 		c.Write([]byte(string(result)))
 
 	}
 
 
 }
-func random() int {
+func Random() int {
 	return 12345 
 }
 
