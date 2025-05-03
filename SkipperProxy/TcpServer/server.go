@@ -3,8 +3,6 @@ package tcpserver
 import (
 	"fmt"
 	"net"
-	"time"
-	"math/rand"
 )
 
 func StartTcp() {
@@ -14,7 +12,6 @@ func StartTcp() {
 		return
 	}
 	defer l.Close()
-	rand.Seed(time.Now().Unix())
 
 	for {
 		c, err := l.Accept()
