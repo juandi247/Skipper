@@ -5,6 +5,10 @@ import (
 	"strings"
 )
 
+
+// todo: this Router will not be used, the proxy will not handle the request and redirect to route methods
+// the proxy will pass the http request through the tcp client connection, and then receive the reponse from lcoalhost
+
 type Handler func(w http.ResponseWriter, r *http.Request)
 
 type Router struct{

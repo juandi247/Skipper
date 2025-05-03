@@ -1,0 +1,11 @@
+1. Import net package
+
+2. Dial the server: net.Dial() function permits to stablish a connection to the server,
+we would need to specifcy the network typoe and server ip adfdres and portnumber
+net.Dial("tcp", "localhost:8080")
+
+
+3. Read and write data: we can use the "conn" object to send and receive data (this would probably
+be used later on, for the tranmision of data to the reverse proxy using a parsed json of the request!!)
+
+4. Close the connection using conn.close() probably with a defer (or a listentning goroutine on the proxy to check for timouts, or inatcitivyt)
