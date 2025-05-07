@@ -14,14 +14,22 @@ type Server struct {
 	errorHandler      ErrorHandler
 	server            *http.Server
 	TcpRequestChannel chan tcpserver.TcpMessage
+	certFile           string
+	keyFile            string
+	useHTTPS           bool
 }
 
 type ServerOption func(*Server)
-
-func NewServer(port int, ch chan tcpserver.TcpMessage) *Server {
+func NewServer(port int, ch chan tcpserver.TcpMessage, useHTTPS bool) *Server {
 	s := &Server{
 		port:              port,
 		TcpRequestChannel: ch,
+		useHTTPS:          useHTTPS,
+	}
+
+	if useHTTPS {
+		s.certFile = "/etc/letsencrypt/live/skipper.lat/fullchain.pem"  // Ruta del certificado
+		s.keyFile = "/etc/letsencrypt/live/skipper.lat/privkey.pem"     // Ruta de la clave privada
 	}
 
 	s.Router = NewRouter(s)

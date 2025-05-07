@@ -15,7 +15,10 @@ import (
 func main() {
 	server := tcpserver.NewServer(":9000")
 	// Run http server
-	s := HttpServer.NewServer(8080, server.RequestChannel)
+	s := HttpServer.NewServer(8080, server.RequestChannel, false)
+
+	// httpsServer:= HttpServer.NewServer(443, server.RequestChannel, true)
+	
 	s.Router.Any("/*", s.ParseHttpRequest)
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
