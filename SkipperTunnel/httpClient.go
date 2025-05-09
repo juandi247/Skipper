@@ -25,3 +25,10 @@ func NewHttpClient() {
 
 	fmt.Println(string(body))
 }
+
+func ReceiveRequest(ch chan string) {
+	for {
+		request := <-ch
+		fmt.Println("VOY A ENVIAR LA REQUEST A LOCALHOST", request)
+	}
+}
