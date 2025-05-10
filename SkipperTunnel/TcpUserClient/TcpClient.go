@@ -1,4 +1,4 @@
-package main
+package TcpUserClient
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 // thats to receive data onn a buffer and readed
-func HandleReceive(conn net.Conn, ch chan string) {
+func HandleReceive(conn net.Conn, ch chan []byte) {
 	buffer := make([]byte, 1024)
 	for {
 		n, err := conn.Read(buffer)
@@ -23,18 +23,23 @@ func HandleReceive(conn net.Conn, ch chan string) {
 		// Si se reciben datos, envíalos al canal
 		if n > 0 {
 			fmt.Printf("Received: %s\n", buffer[:n])
-			ch <- string(buffer[:n])
+			ch <- buffer[:n]
 		}
 	}
 }
 
-func HandleSend(conn net.Conn) {
-	data := []byte("Hello, Server!\n")
-	_, err := conn.Write(data)
+func HandleSend(ch chan []byte, conn net.Conn) {
+	for {
+		response := <-ch
+		fmt.Println("VOY A ENVIAR", response)
 
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		data := []byte(response)
+		_, err := conn.Write(data)
+
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
+		fmt.Println("sendet Hello server message")
 	}
-	fmt.Println("sendet Hello server message")
 }
