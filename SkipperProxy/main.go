@@ -17,9 +17,11 @@ func main() {
 	// Run http server
 	s := HttpServer.NewServer(8080, server.RequestChannel, false)
 
+	// ! just for prod enviroment on GCP virtual machine
 	// httpsServer:= HttpServer.NewServer(443, server.RequestChannel, true)
-	
+
 	s.Router.Any("/*", s.ParseHttpRequest)
+	s.Router.ServeFavicon()
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
@@ -46,10 +48,11 @@ func main() {
 			for _, conn := range server.ConnectionMap {
 				// Solo uno en el map, le escribimos y salimos
 				_, err := conn.Write(msg.Data)
+				fmt.Println("ya se fue")
 				if err != nil {
 					fmt.Printf("Error escribiendo a conexión TCP: %v\n", err)
 				}
-				break 
+				break
 			}
 			server.ConnMutext.Unlock()
 		}

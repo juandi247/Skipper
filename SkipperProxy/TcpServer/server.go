@@ -16,16 +16,16 @@ type Server struct {
 	MessageChanel chan []byte
 	// todo: a connection map to help later with the wildcard and redirecting routing
 	ConnMutext     sync.Mutex
-	ConnectionMap map[string]net.Conn
+	ConnectionMap  map[string]net.Conn
 	RequestChannel chan TcpMessage
 }
 
 func NewServer(listenAddr string) *Server {
 	return &Server{
-		listenAdrr:    listenAddr,
-		quitch:        make(chan struct{}),
-		MessageChanel: make(chan []byte, 10),
-		ConnectionMap: make(map[string]net.Conn),
+		listenAdrr:     listenAddr,
+		quitch:         make(chan struct{}),
+		MessageChanel:  make(chan []byte, 10),
+		ConnectionMap:  make(map[string]net.Conn),
 		RequestChannel: make(chan TcpMessage),
 	}
 }
@@ -86,7 +86,7 @@ func (s *Server) ReadLoop(conn net.Conn) {
 			break
 		}
 		// write to the tcp client
-		conn.Write([]byte(string("te escribo de vuelta!")))
+		// conn.Write([]byte(string("te escribo de vuelta!")))
 
 		// send the message received to the channel
 		s.MessageChanel <- buffer[:numberOfBytes]

@@ -25,6 +25,7 @@ type HttpRequest struct {
 }
 
 func (s *Server) ParseHttpRequest(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Ejecutando ParseHttpRequest...")
 
 	// headers read
 	headers := make(map[string]string)
@@ -65,10 +66,9 @@ func (s *Server) ParseHttpRequest(w http.ResponseWriter, r *http.Request) {
 		Target: request.TargetUri,
 		Data:   requestBytes,
 	}
+	fmt.Println("envio un mensajito")
 
 	s.TcpRequestChannel <- tcpMessage
-
-	fmt.Println(tcpMessage)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(request)
