@@ -2,7 +2,7 @@ package main
 
 import (
 	"SkipperTunnelProxy/HttpServer"
- 	"SkipperTunnelProxy/TcpServer"
+	tcpserver "SkipperTunnelProxy/TcpServer"
 	"context"
 	"fmt"
 	"log"
@@ -15,12 +15,17 @@ import (
 func main() {
 	server := tcpserver.NewServer(":9000")
 	// Run http server
-	s := HttpServer.NewServer(8080)
-	s.Router.Any("/*", HttpServer.ParseHttpRequest)
+	s := HttpServer.NewServer(8080, server.RequestChannel, false)
+
+	// ! just for prod enviroment on GCP virtual machine
+	// httpsServer:= HttpServer.NewServer(443, server.RequestChannel, true)
+
+	s.Router.Any("/*", s.ParseHttpRequest)
+	s.Router.ServeFavicon()
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
-// ! Goroutine for running the server
+	// ! Goroutine for running the server
 	go func() {
 		if err := s.Run(); err != nil {
 			log.Fatalf("Error starting server: %v", err)
@@ -29,9 +34,7 @@ func main() {
 
 	fmt.Println("Server is running on http://localhost:8080")
 
-
-
-// ! Run TCP server
+	// ! Run TCP server
 	go func() {
 		for msg := range server.MessageChanel {
 			fmt.Println("message received", string(msg))
@@ -39,6 +42,21 @@ func main() {
 	}()
 	go server.Start()
 
+	go func() {
+		for msg := range server.RequestChannel {
+			server.ConnMutext.Lock()
+			for _, conn := range server.ConnectionMap {
+				// Solo uno en el map, le escribimos y salimos
+				_, err := conn.Write(msg.Data)
+				fmt.Println("ya se fue")
+				if err != nil {
+					fmt.Printf("Error escribiendo a conexión TCP: %v\n", err)
+				}
+				break
+			}
+			server.ConnMutext.Unlock()
+		}
+	}()
 
 	// STOPPPP the http when getting the STOP
 	//Interrupt signal
@@ -50,5 +68,3 @@ func main() {
 		log.Fatalf("Server forced to shutdown: %v", err)
 	}
 }
-
-

@@ -22,6 +22,3 @@ func StartTcp() {
 		go handleTcpConnection(c)
 	}
 }
-
-
-

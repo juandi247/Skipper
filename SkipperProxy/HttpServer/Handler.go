@@ -1,6 +1,7 @@
 package HttpServer
 
 import (
+	tcpserver "SkipperTunnelProxy/TcpServer"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -23,7 +24,8 @@ type HttpRequest struct {
 	Body      string            `json:"body"`    // Body
 }
 
-func ParseHttpRequest(w http.ResponseWriter, r *http.Request) {
+func (s *Server) ParseHttpRequest(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Ejecutando ParseHttpRequest...")
 
 	// headers read
 	headers := make(map[string]string)
@@ -60,8 +62,13 @@ func ParseHttpRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error al convertir la solicitud a JSON", http.StatusInternalServerError)
 		return
 	}
+	tcpMessage := tcpserver.TcpMessage{
+		Target: request.TargetUri,
+		Data:   requestBytes,
+	}
+	fmt.Println("envio un mensajito")
 
-	fmt.Println(requestBytes)
+	s.TcpRequestChannel <- tcpMessage
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(request)

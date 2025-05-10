@@ -1,6 +1,7 @@
 package HttpServer
 
 import (
+	tcpserver "SkipperTunnelProxy/TcpServer"
 	"context"
 	"fmt"
 	"net/http"
@@ -10,15 +11,26 @@ type Server struct {
 	port   int
 	Router *Router
 	// middlewares  []Middleware
-	errorHandler ErrorHandler
-	server       *http.Server
+	errorHandler      ErrorHandler
+	server            *http.Server
+	TcpRequestChannel chan tcpserver.TcpMessage
+	certFile          string
+	keyFile           string
+	useHTTPS          bool
 }
 
 type ServerOption func(*Server)
 
-func NewServer(port int) *Server {
+func NewServer(port int, ch chan tcpserver.TcpMessage, useHTTPS bool) *Server {
 	s := &Server{
-		port: port,
+		port:              port,
+		TcpRequestChannel: ch,
+		useHTTPS:          useHTTPS,
+	}
+
+	if useHTTPS {
+		s.certFile = "/etc/letsencrypt/live/skipper.lat/fullchain.pem" // Ruta del certificado
+		s.keyFile = "/etc/letsencrypt/live/skipper.lat/privkey.pem"    // Ruta de la clave privada
 	}
 
 	s.Router = NewRouter(s)
@@ -39,6 +51,10 @@ func (s *Server) Run() error {
 		Handler: s,
 	}
 	fmt.Printf("Server starting on port %d", s.port)
+
+	if s.useHTTPS {
+		return s.server.ListenAndServeTLS(s.certFile, s.keyFile)
+	}
 	return s.server.ListenAndServe()
 
 }
