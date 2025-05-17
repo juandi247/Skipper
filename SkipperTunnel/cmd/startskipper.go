@@ -6,6 +6,8 @@ package cmd
 import (
 	"SkipperTunnel/HttpUserClient"
 	"SkipperTunnel/TcpUserClient"
+	"SkipperTunnel/utils"
+
 	"fmt"
 	"net"
 	"os"
@@ -21,6 +23,8 @@ var (
 	subdomain string
 )
 
+const proxyUrl string = "localhost9000"
+
 // startskipperCmd represents the startskipper command
 var startskipperCmd = &cobra.Command{
 	Use:   "startskipper",
@@ -29,11 +33,11 @@ var startskipperCmd = &cobra.Command{
 		requestChannel := make(chan []byte)
 		responseChannel := make(chan []byte)
 		localhostUrl := "http://localhost:" + strconv.Itoa(port)
+		
 
 		clientHttp := HttpUserClient.NewHttpCliennt(localhostUrl, 5*time.Second)
 		// HTTP CLIENTT
 		go func() {
-
 			resp, err := clientHttp.Client.Get(localhostUrl)
 			if err != nil {
 				fmt.Println("Error on localhost", err)
@@ -48,18 +52,31 @@ var startskipperCmd = &cobra.Command{
 			defer resp.Body.Close()
 
 			for {
-				time.Sleep(3 * time.Second)
+				respPing, err:=utils.Ping(localhostUrl, clientHttp.Client)
+				if err!=nil || respPing!=200{
+					fmt.Println("ping completed to localhost")
+					return
+				}
+				time.Sleep(10 * time.Second)
+				fmt.Println("ping completed to localhost")
 			}
 		}()
 
 		// TCP CLIENT
 		go func() {
-			conn, err := net.Dial("tcp", "localhost:9000")
+			conn, err := net.Dial("tcp", proxyUrl)
 			if err != nil {
 				fmt.Print(err)
 				return
 			}
 			fmt.Println("estoy inciando TCP")
+			 i, err:= conn.Write([]byte(subdomain))
+
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+			fmt.Println("sendet Hello server message",i)
 
 			go TcpUserClient.HandleReceive(conn, requestChannel)
 
@@ -70,11 +87,13 @@ var startskipperCmd = &cobra.Command{
 
 			for {
 				time.Sleep(2 * time.Second)
-				// fmt.Println("Conexión TCP sigue activa")
 				runtime.GOMAXPROCS(0) // Usar todos los núcleos del CPU
 				fmt.Println("Número total de goroutines:", runtime.NumGoroutine())
 			}
 		}()
+
+
+		
 		select {}
 
 	},

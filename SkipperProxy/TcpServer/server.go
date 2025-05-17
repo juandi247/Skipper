@@ -3,6 +3,7 @@ package tcpserver
 import (
 	"fmt"
 	"net"
+	"strings"
 	"sync"
 )
 
@@ -56,12 +57,30 @@ func (s *Server) AcceptLoop() {
 			continue
 		}
 		fmt.Println("New connection", conn.RemoteAddr())
-		addr := conn.RemoteAddr().String()
-		s.ConnMutext.Lock()
-		s.ConnectionMap[addr] = conn
-		s.ConnMutext.Unlock()
+		// addr := conn.RemoteAddr().String()
+		buffer := make([]byte, 2048)
+		numberOfBytes, err := conn.Read(buffer)
+		if err != nil {
+			fmt.Println("read error", err)
+			conn.Close()
+			continue
+		}
 
-		fmt.Println(s.ConnectionMap)
+		// Convertir el buffer a string para extraer el subdominio
+		subdomain := strings.TrimSpace(string(buffer[:numberOfBytes]))
+		fmt.Println("Subdominio recibido:", subdomain)
+
+
+		s.ConnMutext.Lock()
+		if _, exists := s.ConnectionMap[subdomain]; exists {
+			fmt.Println("⚠️ Error: Subdominio ya en uso:", subdomain)
+			s.ConnMutext.Unlock()
+			conn.Close()
+			continue
+		}
+		s.ConnectionMap[subdomain] = conn
+		s.ConnMutext.Unlock()
+		fmt.Println(subdomain)
 		// handling every connection on a different goroutine
 		go s.ReadLoop(conn)
 	}

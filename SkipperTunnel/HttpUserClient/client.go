@@ -17,6 +17,7 @@ type HttpRequest struct {
 	Path      string            `json:"path"`    // "/api/endpoint", "/login", etc.
 	Header    map[string]string `json:"headers"` // Cookies, tokens. It is always a map
 	Body      string            `json:"body"`    // Body
+	RequestID string			`json:"requestID"` 
 }
 
 type HttpResponse struct {
@@ -28,6 +29,9 @@ type HttpResponse struct {
 	Proto      string            `json:"version"` // HTTP/1.1, HTTP/2
 	Header     map[string]string `json:"headers"` // Cookies, tokens. It is always a map
 	Body       string            `json:"body"`    // Body
+	RequestID string			`json:"requestID"` 
+
+
 }
 
 type HttpClient struct {
@@ -46,8 +50,13 @@ func NewHttpCliennt(addr string, timeout time.Duration) *HttpClient {
 }
 
 func ReceiveRequest(requestChannel chan []byte, responsechannel chan []byte, client *HttpClient) {
+			fmt.Println("esperando ooochannel")
+
 	for {
+		fmt.Println("esperando channel")
 		request := <-requestChannel
+				fmt.Println("SEGUIMOS channel")
+
 		// send the request.
 		var httpRequest HttpRequest
 		err := json.Unmarshal((request), &httpRequest)
@@ -55,20 +64,38 @@ func ReceiveRequest(requestChannel chan []byte, responsechannel chan []byte, cli
 			fmt.Println("Error al decodificar la request:", err)
 			continue
 		}
+		fmt.Println("REQUEST ID FOMR REQUEST", httpRequest.RequestID)
 
-		go func() {
-			response, err := ConvertToHttpRequest(&httpRequest, client)
+		go func(req HttpRequest) {
+			responseBytes, err := ConvertToHttpRequest(&req, client, req.RequestID)
 			if err != nil {
-				fmt.Errorf("error", err)
+				fmt.Println("Error al enviar la solicitud:", err)
 				return
 			}
-			fmt.Println("AAAAAAAAAAAAAAAAAAAAAa ----------  Enviando al responsechannel:", string(response)," \n")  // <--- LOG NUEVO
-			responsechannel <- response
-		}()
+
+			// Agregar el request ID a la respuesta antes de enviar al canal
+			var httpResponse HttpResponse
+			err = json.Unmarshal(responseBytes, &httpResponse)
+			if err != nil {
+				fmt.Println("Error al decodificar response:", err)
+				return
+			}
+			fmt.Println("REQUEST ID FOMR REQUEST", httpRequest.RequestID)
+
+			httpResponse.RequestID = req.RequestID
+			fmt.Println("REQUEST ID FOMR RESOPNSE", httpResponse.RequestID)
+			responseWithID, err := json.Marshal(httpResponse)
+			if err != nil {
+				fmt.Println("Error al codificar response:", err)
+				return
+			}
+			fmt.Println("✅ Enviando respuesta con RequestID:", req.RequestID)
+			responsechannel <- responseWithID
+		}(httpRequest)
 	}
 }
 
-func ConvertToHttpRequest(hr *HttpRequest, client *HttpClient) ([]byte, error) {
+func ConvertToHttpRequest(hr *HttpRequest, client *HttpClient, requestID string) ([]byte, error) {
 	url := "http://localhost:5000"
 	body := bytes.NewBufferString(hr.Body)
 
@@ -96,7 +123,7 @@ func ConvertToHttpRequest(hr *HttpRequest, client *HttpClient) ([]byte, error) {
 	defer resp.Body.Close()
 
 	// Procesar la respuesta
-	response, err := ParseHttpResponse(resp)
+	response, err := ParseHttpResponse(resp, requestID)
 	if err != nil {
 		return nil, fmt.Errorf("error al parsear la respuesta: %v", err)
 	}
@@ -104,7 +131,7 @@ func ConvertToHttpRequest(hr *HttpRequest, client *HttpClient) ([]byte, error) {
 
 }
 
-func ParseHttpResponse(r *http.Response) ([]byte, error) {
+func ParseHttpResponse(r *http.Response, requestID string) ([]byte, error) {
 	fmt.Println("Ejecutando ParseHttpRequest...")
 
 	// headers read
@@ -133,6 +160,7 @@ func ParseHttpResponse(r *http.Response) ([]byte, error) {
 		Proto:  r.Proto,
 		Header: headers,
 		Body:   string(bodyBytes),
+		RequestID: requestID,
 	}
 	requestBytes, err := json.Marshal(request)
 	if err != nil {

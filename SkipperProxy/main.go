@@ -4,6 +4,7 @@ import (
 	"SkipperTunnelProxy/HttpServer"
 	tcpserver "SkipperTunnelProxy/TcpServer"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -37,22 +38,54 @@ func main() {
 	// ! Run TCP server
 	go func() {
 		for msg := range server.MessageChanel {
-			fmt.Println("message received", string(msg))
+			// Intentar deserializar el mensaje como JSON
+			var httpResponse HttpServer.HttpResponse
+			err := json.Unmarshal(msg, &httpResponse)
+			if err != nil {
+				fmt.Println("❌ Error al deserializar el mensaje:", err)
+				continue
+			}
+
+			// Verificar si el JSON tiene los campos esperados
+			fmt.Println("Cuerpo:", httpResponse.Body)
+			fmt.Println("IDDDD:", httpResponse.RequestID)
+
+			// Obtener el requestID de los datos si lo necesitas
+			requestID := httpResponse.RequestID // Asumir que 'Method' es el requestID, o usa otro campo
+			responseChannel, ok := s.GetResponseChannel(requestID)
+			if ok {
+				// Enviar el cuerpo del mensaje al canal de respuesta
+				responseChannel <- []byte(httpResponse.Body)
+			} else {
+				fmt.Printf("⚠️ No se encontró canal de respuesta para el requestID: %s\n", requestID)
+			}
 		}
 	}()
+
+	// this is for the starting of the server
 	go server.Start()
 
 	go func() {
 		for msg := range server.RequestChannel {
 			server.ConnMutext.Lock()
-			for _, conn := range server.ConnectionMap {
-				// Solo uno en el map, le escribimos y salimos
-				_, err := conn.Write(msg.Data)
-				fmt.Println("ya se fue")
-				if err != nil {
-					fmt.Printf("Error escribiendo a conexión TCP: %v\n", err)
-				}
-				break
+
+			fmt.Printf("Buscando conexión para target: %s\n", msg.Target)
+			fmt.Printf("Contenido de ConnectionMap: %v\n", server.ConnectionMap)
+
+			conn, exists := server.ConnectionMap[msg.Target]
+			fmt.Println(exists)
+			if !exists {
+				fmt.Printf("⚠️ No se encontró conexión para el target: %s\n", msg.Target)
+				server.ConnMutext.Unlock()
+				continue
+			}
+			_, err := conn.Write(msg.Data)
+			if err != nil {
+				fmt.Printf("❌ Error escribiendo a conexión TCP [%s]: %v\n", msg.Target, err)
+				delete(server.ConnectionMap, msg.Target)
+				conn.Close()
+			} else {
+				fmt.Printf("✅ Mensaje enviado a [%s]\n", msg.Target)
 			}
 			server.ConnMutext.Unlock()
 		}

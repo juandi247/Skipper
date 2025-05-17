@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"github.com/google/uuid"
+
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -22,6 +24,20 @@ type HttpRequest struct {
 	Path      string            `json:"path"`    // "/api/endpoint", "/login", etc.
 	Header    map[string]string `json:"headers"` // Cookies, tokens. It is always a map
 	Body      string            `json:"body"`    // Body
+	RequestID string   `json:"requestID"`
+}
+
+
+type HttpResponse struct {
+	Status     string `json:"status"`
+	StatusCode int    `json:"statusCode"`
+	// dont think i need those protos but for now
+	ProtoMajor int               // e.g. 1
+	ProtoMinor int               // e.g. 0
+	Proto      string            `json:"version"` // HTTP/1.1, HTTP/2
+	Header     map[string]string `json:"headers"` // Cookies, tokens. It is always a map
+	Body       string            `json:"body"`    // Body
+	RequestID string			`json:"requestID"` 
 }
 
 func (s *Server) ParseHttpRequest(w http.ResponseWriter, r *http.Request) {
@@ -49,19 +65,36 @@ func (s *Server) ParseHttpRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	target := r.Host
+if idx := strings.Index(target, "."); idx != -1 {
+    target = target[:idx] // Elimina el puerto (todo después de ":")
+}
+
+	requestID:= uuid.New().String()
+
 	request := HttpRequest{
 		Method:    r.Method,
 		Proto:     r.Proto,
-		TargetUri: r.Host,
+		TargetUri: target,
 		Path:      r.URL.RequestURI(),
 		Header:    headers,
 		Body:      string(bodyBytes),
+		RequestID: requestID,
+
 	}
+
+	
 	requestBytes, err := json.Marshal(request)
 	if err != nil {
 		http.Error(w, "Error al convertir la solicitud a JSON", http.StatusInternalServerError)
 		return
 	}
+
+	ResponseChannel:= make(chan []byte)
+
+	s.RegisterResponseChannel(requestID, ResponseChannel)
+
+
 	tcpMessage := tcpserver.TcpMessage{
 		Target: request.TargetUri,
 		Data:   requestBytes,
@@ -70,8 +103,11 @@ func (s *Server) ParseHttpRequest(w http.ResponseWriter, r *http.Request) {
 
 	s.TcpRequestChannel <- tcpMessage
 
+	responseBytes := <-ResponseChannel
+
+	// Responder al cliente HTTP
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(request)
+	w.Write(responseBytes)
 
 }
 

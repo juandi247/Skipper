@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sync"
 )
 
 type Server struct {
@@ -19,6 +20,9 @@ type Server struct {
 	useHTTPS          bool
 }
 
+var responseMap = make(map[string]chan []byte)
+var responseMapMutex sync.Mutex
+
 type ServerOption func(*Server)
 
 func NewServer(port int, ch chan tcpserver.TcpMessage, useHTTPS bool) *Server {
@@ -27,12 +31,10 @@ func NewServer(port int, ch chan tcpserver.TcpMessage, useHTTPS bool) *Server {
 		TcpRequestChannel: ch,
 		useHTTPS:          useHTTPS,
 	}
-
 	if useHTTPS {
 		s.certFile = "/etc/letsencrypt/live/skipper.lat/fullchain.pem" // Ruta del certificado
 		s.keyFile = "/etc/letsencrypt/live/skipper.lat/privkey.pem"    // Ruta de la clave privada
 	}
-
 	s.Router = NewRouter(s)
 	return s
 }
@@ -77,4 +79,20 @@ func withErrorHandler(handler ErrorHandler) ServerOption {
 
 func DefaultErrorHandler(w http.ResponseWriter, r *http.Request, err error) {
 	http.Error(w, err.Error(), http.StatusInternalServerError)
+}
+
+func (s *Server) RegisterResponseChannel(requestID string, ch chan []byte) {
+	responseMapMutex.Lock()
+	defer responseMapMutex.Unlock()
+	responseMap[requestID] = ch
+}
+
+func (s *Server) GetResponseChannel(requestID string) (chan []byte, bool) {
+	responseMapMutex.Lock()
+	defer responseMapMutex.Unlock()
+	ch, ok := responseMap[requestID]
+	if ok {
+		delete(responseMap, requestID)
+	}
+	return ch, ok
 }
