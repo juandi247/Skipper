@@ -17,6 +17,7 @@ type HttpRequest struct {
 	Path      string            `json:"path"`    // "/api/endpoint", "/login", etc.
 	Header    map[string]string `json:"headers"` // Cookies, tokens. It is always a map
 	Body      string            `json:"body"`    // Body
+	RequestID string 			`json:"requestID"`
 }
 
 type HttpResponse struct {
@@ -28,6 +29,8 @@ type HttpResponse struct {
 	Proto      string            `json:"version"` // HTTP/1.1, HTTP/2
 	Header     map[string]string `json:"headers"` // Cookies, tokens. It is always a map
 	Body       string            `json:"body"`    // Body
+	RequestID string 			`json:"requestID"`
+
 }
 
 type HttpClient struct {
@@ -56,8 +59,16 @@ func ReceiveRequest(requestChannel chan []byte, responsechannel chan []byte, cli
 			continue
 		}
 
+		fmt.Println("REQUEST COMPLETa", string(request))
+		fmt.Println("REQUEST COMPLETa", httpRequest)
+
+		requestID := httpRequest.RequestID  // <-- Guardamos el requestID una vez
+
+		fmt.Println("REQUEST ID DE LA SOLCITUD!!!", requestID)
+
+
 		go func() {
-			response, err := ConvertToHttpRequest(&httpRequest, client)
+			response, err := ConvertToHttpRequest(&httpRequest, client, requestID)
 			if err != nil {
 				fmt.Errorf("error", err)
 				return
@@ -68,7 +79,7 @@ func ReceiveRequest(requestChannel chan []byte, responsechannel chan []byte, cli
 	}
 }
 
-func ConvertToHttpRequest(hr *HttpRequest, client *HttpClient) ([]byte, error) {
+func ConvertToHttpRequest(hr *HttpRequest, client *HttpClient, requestID string) ([]byte, error) {
 	url := "http://localhost:5000"
 	body := bytes.NewBufferString(hr.Body)
 
@@ -96,7 +107,7 @@ func ConvertToHttpRequest(hr *HttpRequest, client *HttpClient) ([]byte, error) {
 	defer resp.Body.Close()
 
 	// Procesar la respuesta
-	response, err := ParseHttpResponse(resp)
+	response, err := ParseHttpResponse(resp,requestID)
 	if err != nil {
 		return nil, fmt.Errorf("error al parsear la respuesta: %v", err)
 	}
@@ -104,7 +115,7 @@ func ConvertToHttpRequest(hr *HttpRequest, client *HttpClient) ([]byte, error) {
 
 }
 
-func ParseHttpResponse(r *http.Response) ([]byte, error) {
+func ParseHttpResponse(r *http.Response, requestID string) ([]byte, error) {
 	fmt.Println("Ejecutando ParseHttpRequest...")
 
 	// headers read
@@ -128,13 +139,14 @@ func ParseHttpResponse(r *http.Response) ([]byte, error) {
 		return nil, fmt.Errorf("error reading body")
 	}
 
-	request := HttpResponse{
+	response := HttpResponse{
 		Status: r.Status,
 		Proto:  r.Proto,
 		Header: headers,
 		Body:   string(bodyBytes),
+		RequestID: requestID,
 	}
-	requestBytes, err := json.Marshal(request)
+	requestBytes, err := json.Marshal(response)
 	if err != nil {
 		return nil, fmt.Errorf("error converting to json")
 	}

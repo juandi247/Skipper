@@ -1,4 +1,4 @@
-package tcpserver
+package message
 
 type TcpMessage struct {
 	Target string `json:"target"`

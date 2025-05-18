@@ -1,7 +1,8 @@
 package HttpServer
 
 import (
-	tcpserver "SkipperTunnelProxy/TcpServer"
+	// tcpserver "SkipperTunnelProxy/TcpServer"
+	"SkipperTunnelProxy/connectionmanager"
 	"context"
 	"fmt"
 	"net/http"
@@ -13,19 +14,20 @@ type Server struct {
 	// middlewares  []Middleware
 	errorHandler      ErrorHandler
 	server            *http.Server
-	TcpRequestChannel chan tcpserver.TcpMessage
 	certFile          string
 	keyFile           string
 	useHTTPS          bool
+	ConnectionManager *connectionmanager.ConnectionManager
 }
 
 type ServerOption func(*Server)
 
-func NewServer(port int, ch chan tcpserver.TcpMessage, useHTTPS bool) *Server {
+func NewServer(port int, useHTTPS bool, connectionManager *connectionmanager.ConnectionManager) *Server {
 	s := &Server{
-		port:              port,
-		TcpRequestChannel: ch,
+		port: port,
+		// TcpRequestChannel: ch,
 		useHTTPS:          useHTTPS,
+		ConnectionManager: connectionManager,
 	}
 
 	if useHTTPS {
