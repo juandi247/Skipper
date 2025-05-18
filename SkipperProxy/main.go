@@ -22,7 +22,7 @@ func main() {
 	s := HttpServer.NewServer(8080, false, cm)
 
 	// ! just for prod enviroment on GCP virtual machine
-	// httpsServer:= HttpServer.NewServer(443, server.RequestChannel, true)
+	// httpsServer:= HttpServer.NewServer(443, true, cm)
 
 	s.Router.Any("/*", s.HandleClientRequest)
 	s.Router.ServeFavicon()
@@ -54,7 +54,7 @@ func main() {
 
 			cm.Mu.Lock()
 			ch, exists := cm.GlobalResponseChannel[response.RequestID]
-			
+
 			fmt.Println("REQUEST ID FROM RESOPNSEEEE", response.RequestID)
 			if exists {
 				// Enviar la respuesta al channel que espera el HTTP handler

@@ -29,10 +29,9 @@ func NewServer(port int, useHTTPS bool, connectionManager *connectionmanager.Con
 		useHTTPS:          useHTTPS,
 		ConnectionManager: connectionManager,
 	}
-
 	if useHTTPS {
-		s.certFile = "/etc/letsencrypt/live/skipper.lat/fullchain.pem" // Ruta del certificado
-		s.keyFile = "/etc/letsencrypt/live/skipper.lat/privkey.pem"    // Ruta de la clave privada
+		s.certFile = "/etc/letsencrypt/live/skipper.lat-0001/fullchain.pem"
+		s.keyFile = "/etc/letsencrypt/live/skipper.lat-0001/privkey.pem"
 	}
 
 	s.Router = NewRouter(s)

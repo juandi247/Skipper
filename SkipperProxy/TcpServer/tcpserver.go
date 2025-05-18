@@ -84,7 +84,7 @@ func (s *Server) ReviewTunnelConnection(conn net.Conn) (string, error) {
 	// Leer el subdominio
 	numberOfBytes, err := conn.Read(buffer)
 	if err != nil {
-		fmt.Println("ERROR LEY_EDNO")
+		fmt.Println("ERRORRRR")
 		return "", fmt.Errorf("error reading subdomain: %v", err)
 	}
 

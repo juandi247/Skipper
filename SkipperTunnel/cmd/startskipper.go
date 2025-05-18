@@ -22,8 +22,11 @@ var (
 	port      int
 	subdomain string
 )
+// ? dev
+const proxyUrl1 string = "localhost:9000"
 
-const proxyUrl string = "localhost:9000"
+// !prod
+const proxyUrl string = "skipper.lat:80"
 
 // startskipperCmd represents the startskipper command
 var startskipperCmd = &cobra.Command{
