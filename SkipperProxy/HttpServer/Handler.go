@@ -1,13 +1,14 @@
 package HttpServer
 
 import (
-	tcpserver "SkipperTunnelProxy/TcpServer"
+	 "SkipperTunnelProxy/message"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+	"github.com/google/uuid"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -22,10 +23,39 @@ type HttpRequest struct {
 	Path      string            `json:"path"`    // "/api/endpoint", "/login", etc.
 	Header    map[string]string `json:"headers"` // Cookies, tokens. It is always a map
 	Body      string            `json:"body"`    // Body
+	RequestID string            `json:"requestID"`
 }
 
-func (s *Server) ParseHttpRequest(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Ejecutando ParseHttpRequest...")
+
+type HttpResponse struct {
+	Status     string `json:"status"`
+	StatusCode int    `json:"statusCode"`
+	// dont think i need those protos but for now
+	ProtoMajor int               // e.g. 1
+	ProtoMinor int               // e.g. 0
+	Proto      string            `json:"version"` // HTTP/1.1, HTTP/2
+	Header     map[string]string `json:"headers"` // Cookies, tokens. It is always a map
+	Body       string            `json:"body"`    // Body
+	RequestID string            `json:"requestID"`
+
+}
+func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
+
+	
+	target := r.Host
+	if idx := strings.Index(target, "."); idx != -1 {
+		target = target[:idx]
+	}
+	_, err := s.ConnectionManager.GetTunnelConnection(target)
+	if err != nil {
+		fmt.Fprintln(w, "404 - Page not found")
+		return
+	}
+	ResponeChannel:= make(chan []byte)	
+	requestId := uuid.New().String()
+
+
+	fmt.Println("YA PASE VALIDACIONNNN!!!")
 
 	// headers read
 	headers := make(map[string]string)
@@ -56,22 +86,53 @@ func (s *Server) ParseHttpRequest(w http.ResponseWriter, r *http.Request) {
 		Path:      r.URL.RequestURI(),
 		Header:    headers,
 		Body:      string(bodyBytes),
+		RequestID: requestId,
 	}
 	requestBytes, err := json.Marshal(request)
 	if err != nil {
 		http.Error(w, "Error al convertir la solicitud a JSON", http.StatusInternalServerError)
 		return
 	}
-	tcpMessage := tcpserver.TcpMessage{
+	tcpMessage := message.TcpMessage{
 		Target: request.TargetUri,
 		Data:   requestBytes,
 	}
-	fmt.Println("envio un mensajito")
 
-	s.TcpRequestChannel <- tcpMessage
+	err = s.ConnectionManager.SendMessageToTunnel(target, tcpMessage)
+	fmt.Println("envio un mensajito", tcpMessage)
+	fmt.Println("mensaje enviado", string(requestBytes))
+	s.ConnectionManager.SaveResponseChannel(requestId,ResponeChannel)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(request)
+
+	// ! now we wait for the response of the TCP server and show it to the user
+
+
+	fmt.Println("gamos a esperarrrr")
+
+	select {
+case respBytes := <-ResponeChannel:
+    // Recibiste la respuesta, puedes parsearla o directamente enviarla al cliente
+    var response HttpResponse
+    err := json.Unmarshal(respBytes, &response)
+	fmt.Println("LLEGO MENSJAEEEEE")
+    if err != nil {
+        http.Error(w, "Error parsing response", http.StatusInternalServerError)
+        return
+    }
+
+	fmt.Printf("\n \n RESPUESTA %v \n",response)
+    
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+    w.Write([]byte(response.Body))
+
+case <-time.After(10 * time.Second):
+    http.Error(w, "Timeout waiting for response", http.StatusGatewayTimeout)
+}
+	
+
+	// s.TcpRequestChannel <- tcpMessage
+	// w.Header().Set("Content-Type", "application/json")
+	// json.NewEncoder(w).Encode(request)
 
 }
 
