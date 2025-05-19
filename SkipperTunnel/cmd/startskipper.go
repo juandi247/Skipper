@@ -22,11 +22,12 @@ var (
 	port      int
 	subdomain string
 )
+
 // ? dev
-const proxyUrl1 string = "localhost:9000"
+const proxyUrl string = "localhost:9000"
 
 // !prod
-const proxyUrl string = "skipper.lat:80"
+// const proxyUrl string = "skipper.lat:80"
 
 // startskipperCmd represents the startskipper command
 var startskipperCmd = &cobra.Command{
@@ -36,7 +37,6 @@ var startskipperCmd = &cobra.Command{
 		requestChannel := make(chan []byte)
 		responseChannel := make(chan []byte)
 		localhostUrl := "http://localhost:" + strconv.Itoa(port)
-		
 
 		clientHttp := HttpUserClient.NewHttpCliennt(localhostUrl, 5*time.Second)
 		// HTTP CLIENTT
@@ -55,8 +55,8 @@ var startskipperCmd = &cobra.Command{
 			defer resp.Body.Close()
 
 			for {
-				respPing, err:=utils.Ping(localhostUrl, clientHttp.Client)
-				if err!=nil || respPing!=200{
+				respPing, err := utils.Ping(localhostUrl, clientHttp.Client)
+				if err != nil || respPing != 200 {
 					fmt.Println("ping completed to localhost")
 					return
 				}
@@ -73,13 +73,13 @@ var startskipperCmd = &cobra.Command{
 				return
 			}
 			fmt.Println("estoy inciando TCP")
-			 i, err:= conn.Write([]byte(subdomain))
+			i, err := conn.Write([]byte(subdomain))
 
 			if err != nil {
 				fmt.Println("Error:", err)
 				return
 			}
-			fmt.Println("sendet Hello server message",i)
+			fmt.Println("sendet Hello server message", i)
 
 			go TcpUserClient.HandleReceive(conn, requestChannel)
 
@@ -95,8 +95,6 @@ var startskipperCmd = &cobra.Command{
 			}
 		}()
 
-
-		
 		select {}
 
 	},

@@ -1,14 +1,14 @@
 package HttpServer
 
 import (
-	 "SkipperTunnelProxy/message"
+	"SkipperTunnelProxy/message"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"strings"
 	"time"
-	"github.com/google/uuid"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +26,6 @@ type HttpRequest struct {
 	RequestID string            `json:"requestID"`
 }
 
-
 type HttpResponse struct {
 	Status     string `json:"status"`
 	StatusCode int    `json:"statusCode"`
@@ -36,12 +35,11 @@ type HttpResponse struct {
 	Proto      string            `json:"version"` // HTTP/1.1, HTTP/2
 	Header     map[string]string `json:"headers"` // Cookies, tokens. It is always a map
 	Body       string            `json:"body"`    // Body
-	RequestID string            `json:"requestID"`
-
+	RequestID  string            `json:"requestID"`
 }
+
 func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 
-	
 	target := r.Host
 	if idx := strings.Index(target, "."); idx != -1 {
 		target = target[:idx]
@@ -51,9 +49,8 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "404 - Page not found")
 		return
 	}
-	ResponeChannel:= make(chan []byte)	
+	ResponeChannel := make(chan []byte)
 	requestId := uuid.New().String()
-
 
 	fmt.Println("YA PASE VALIDACIONNNN!!!")
 
@@ -101,40 +98,46 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 	err = s.ConnectionManager.SendMessageToTunnel(target, tcpMessage)
 	fmt.Println("envio un mensajito", tcpMessage)
 	fmt.Println("mensaje enviado", string(requestBytes))
-	s.ConnectionManager.SaveResponseChannel(requestId,ResponeChannel)
-
-
-	// ! now we wait for the response of the TCP server and show it to the user
-
+	s.ConnectionManager.SaveResponseChannel(requestId, ResponeChannel)
 
 	fmt.Println("gamos a esperarrrr")
 
 	select {
-case respBytes := <-ResponeChannel:
-    // Recibiste la respuesta, puedes parsearla o directamente enviarla al cliente
-    var response HttpResponse
-    err := json.Unmarshal(respBytes, &response)
-	fmt.Println("LLEGO MENSJAEEEEE")
-    if err != nil {
-        http.Error(w, "Error parsing response", http.StatusInternalServerError)
-        return
-    }
+	case respBytes := <-ResponeChannel:
+		var response HttpResponse
+		err := json.Unmarshal(respBytes, &response)
+		fmt.Println("LLEGO MENSJAEEEEE")
+		if err != nil {
+			http.Error(w, "Error parsing response", http.StatusInternalServerError)
+			return
+		}
 
-	fmt.Printf("\n \n RESPUESTA %v \n",response)
-    
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-    w.Write([]byte(response.Body))
+		fmt.Printf("\n \n RESPUESTA %v \n", response)
 
-case <-time.After(10 * time.Second):
-    http.Error(w, "Timeout waiting for response", http.StatusGatewayTimeout)
-}
-	
+		// TODO : change this becasue somethigns would be a json, so depending on the response we get w.write depending on them
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write([]byte(response.Body))
+
+	case <-time.After(10 * time.Second):
+		http.Error(w, "Timeout waiting for response", http.StatusGatewayTimeout)
+	}
 
 	// s.TcpRequestChannel <- tcpMessage
 	// w.Header().Set("Content-Type", "application/json")
 	// json.NewEncoder(w).Encode(request)
 
 }
+
+// func ParseResponse(response HttpResponse){
+// 	   // Configurar el tipo de contenido correctamente
+//     contentType, ok := response.Header["Content-Type"]
+//     if ok {
+//         w.Header().Set("Content-Type", contentType)
+//     } else {
+//         w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+//     }
+// }
 
 // ! for testing too
 type test_struct struct {

@@ -1,22 +1,22 @@
 package connectionmanager
 
 import (
-	 "SkipperTunnelProxy/message"
+	"SkipperTunnelProxy/message"
 	"fmt"
 	"net"
 	"sync"
 )
 
 type ConnectionManager struct {
-	TunnelConnectionsMap map[string]net.Conn
-	Mu                   sync.Mutex
-	GlobalResponseChannel  map[string] chan[]byte
+	TunnelConnectionsMap  map[string]net.Conn
+	Mu                    sync.Mutex
+	GlobalResponseChannel map[string]chan []byte
 }
 
 func NewConnectionManager() *ConnectionManager {
 	return &ConnectionManager{
-		TunnelConnectionsMap: make(map[string]net.Conn),
-		Mu:                   *&sync.Mutex{},
+		TunnelConnectionsMap:  make(map[string]net.Conn),
+		Mu:                    *&sync.Mutex{},
 		GlobalResponseChannel: make(map[string]chan []byte),
 	}
 }
@@ -35,7 +35,7 @@ func (cm *ConnectionManager) DeleteTunnelConnection(subdomain string) {
 func (cm *ConnectionManager) SendMessageToTunnel(subdomain string, message message.TcpMessage) error {
 	cm.Mu.Lock()
 	defer cm.Mu.Unlock()
-	conn,_  := cm.TunnelConnectionsMap[subdomain]
+	conn, _ := cm.TunnelConnectionsMap[subdomain]
 	fmt.Println("SUBDOMINOOOO", subdomain)
 	fmt.Println(message.Data, "MESAGE DATAAAAAAAAAAA")
 	_, err := conn.Write(message.Data)
@@ -45,10 +45,9 @@ func (cm *ConnectionManager) SendMessageToTunnel(subdomain string, message messa
 	return nil
 }
 
-
 func (cm *ConnectionManager) GetTunnelConnection(subdomain string) (bool, error) {
 	_, ok := cm.TunnelConnectionsMap[subdomain]
-		fmt.Println("MAPAPAA")
+	fmt.Println("MAPAPAA")
 
 	fmt.Println(&cm.TunnelConnectionsMap)
 	fmt.Println(ok, "aa")
@@ -62,9 +61,8 @@ func (cm *ConnectionManager) GetTunnelConnection(subdomain string) (bool, error)
 
 }
 
-
-func (cm *ConnectionManager) SaveResponseChannel(uid string,ch chan []byte){
+func (cm *ConnectionManager) SaveResponseChannel(uid string, ch chan []byte) {
 	cm.Mu.Lock()
 	defer cm.Mu.Unlock()
-	cm.GlobalResponseChannel[uid]=ch
+	cm.GlobalResponseChannel[uid] = ch
 }

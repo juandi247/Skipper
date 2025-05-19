@@ -1,8 +1,11 @@
 package tcpserver
 
 import (
+	"encoding/binary"
 	"fmt"
+	"io"
 	"net"
+
 	// "time"
 
 	// "sync"
@@ -28,7 +31,7 @@ func NewServer(listenAddr string, cm *connectionmanager.ConnectionManager) *Serv
 	return &Server{
 		listenAdrr:        listenAddr,
 		quitch:            make(chan struct{}),
-		MessageChanel:     make(chan []byte, 10),
+		MessageChanel:     make(chan []byte, 4096),
 		ConnectionManager: cm,
 	}
 }
@@ -112,18 +115,30 @@ func (s *Server) ReadLoop(conn net.Conn, subdomain string) {
 
 	}()
 
-	buffer := make([]byte, 2048)
+	// buffer := make([]byte, 4096)
+
 	for {
-		numberOfBytes, err := conn.Read(buffer)
+		// read the first 4 bytes of the message (the length provided by the tunnel)
+		sizeBuf := make([]byte, 4)
+		// this readfull reads the number of bytes, given a len(buf) in this case is the one
+		// that we sent from the tunnel
+		_, err := io.ReadFull(conn, sizeBuf)
 		if err != nil {
-			fmt.Println("read error", err)
+			fmt.Println("Error leyendo tamaño:", err)
 			break
 		}
-		// write to the tcp client
-		// conn.Write([]byte(string("te escribo de vuelta!")))
+		// big endian notation because of tcp and the tunnel was like this
+		length := binary.BigEndian.Uint32(sizeBuf)
 
-		// send the message received to the channel
-		s.MessageChanel <- buffer[:numberOfBytes]
+		msgBuf := make([]byte, length)
+		_, err = io.ReadFull(conn, msgBuf)
+		if err != nil {
+			fmt.Println("Error leyendo mensaje:", err)
+			break
+		}
+
+		fmt.Println("Mensaje completo recibido:", string(msgBuf))
+		s.MessageChanel <- msgBuf
 	}
 
 }
