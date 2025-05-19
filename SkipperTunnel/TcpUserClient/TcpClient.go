@@ -1,6 +1,8 @@
 package TcpUserClient
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"net"
@@ -32,9 +34,16 @@ func HandleSend(ch chan []byte, conn net.Conn) {
 	for {
 		response := <-ch
 		fmt.Println("VOY A ENVIAR", response)
+		lenght := uint32(len(response))
 
-		data := []byte(response)
-		_, err := conn.Write(data)
+		buf := new(bytes.Buffer)
+
+		binary.Write(buf, binary.BigEndian, lenght)
+		buf.Write(response)
+
+		// todo: check becasue we are reconverting the resopne to bytes, and the resopnse was already in bytes
+		// data := []byte(response)
+		_, err := conn.Write(buf.Bytes())
 
 		if err != nil {
 			fmt.Println("Error:", err)
