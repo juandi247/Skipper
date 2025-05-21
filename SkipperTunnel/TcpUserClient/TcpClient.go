@@ -10,9 +10,9 @@ import (
 
 // thats to receive data onn a buffer and readed
 func HandleReceive(conn net.Conn, ch chan []byte) {
-	buffer := make([]byte, 1024)
 	for {
-		n, err := conn.Read(buffer)
+		sizeBuf := make([]byte, 4)
+		_, err := io.ReadFull(conn, sizeBuf)
 		if err != nil {
 			if err == io.EOF {
 				fmt.Println("El servidor cerró la conexión.")
@@ -21,12 +21,19 @@ func HandleReceive(conn net.Conn, ch chan []byte) {
 			fmt.Print(err)
 			return
 		}
-		fmt.Printf("Received: %s\n", buffer[:n])
+
+		length := binary.BigEndian.Uint32(sizeBuf)
+		fmt.Println("TENEMOS UN LENGTH THE REQUEST DE", length)
+		msgBuf := make([]byte, length)
 		// Si se reciben datos, envíalos al canal
-		if n > 0 {
-			fmt.Printf("Received: %s\n", buffer[:n])
-			ch <- buffer[:n]
+		_, err = io.ReadFull(conn, msgBuf)
+		if err != nil {
+			fmt.Println("Error leyendo mensaje:", err)
+			break
 		}
+
+		fmt.Printf("Received: %s\n", msgBuf)
+		ch <- msgBuf
 	}
 }
 

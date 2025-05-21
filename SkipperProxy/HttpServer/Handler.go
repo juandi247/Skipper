@@ -1,7 +1,6 @@
 package HttpServer
 
 import (
-	"SkipperTunnelProxy/message"
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
@@ -9,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"bytes"
+	"encoding/binary"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -90,13 +91,23 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error al convertir la solicitud a JSON", http.StatusInternalServerError)
 		return
 	}
-	tcpMessage := message.TcpMessage{
-		Target: request.TargetUri,
-		Data:   requestBytes,
-	}
 
-	err = s.ConnectionManager.SendMessageToTunnel(target, tcpMessage)
-	fmt.Println("envio un mensajito", tcpMessage)
+	// !length frame  (4 bytes) for handling the request on the tunnel
+	requestLength:= uint32(len(requestBytes))
+	// we create a raw buffer
+	requestBuffer := new(bytes.Buffer)
+	/* we append to the buffer the request length
+	now we append to the requestBuffer (containing the 4 byte integer with the length),
+	we would only have on the request buffer the integer
+	*/
+	binary.Write(requestBuffer, binary.BigEndian, requestLength)
+
+	// so we now write the request on the buffer
+	requestBuffer.Write(requestBytes)
+	
+
+	err = s.ConnectionManager.SendMessageToTunnel(target, requestBuffer.Bytes())
+	fmt.Println("envio un mensajito")
 	fmt.Println("mensaje enviado", string(requestBytes))
 	s.ConnectionManager.SaveResponseChannel(requestId, ResponeChannel)
 
@@ -129,15 +140,6 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// func ParseResponse(response HttpResponse){
-// 	   // Configurar el tipo de contenido correctamente
-//     contentType, ok := response.Header["Content-Type"]
-//     if ok {
-//         w.Header().Set("Content-Type", contentType)
-//     } else {
-//         w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-//     }
-// }
 
 // ! for testing too
 type test_struct struct {
