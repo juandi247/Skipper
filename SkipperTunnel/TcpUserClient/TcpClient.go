@@ -2,6 +2,7 @@ package TcpUserClient
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -9,16 +10,12 @@ import (
 )
 
 // thats to receive data onn a buffer and readed
-func HandleReceive(conn net.Conn, ch chan []byte) {
+func HandleReceive(conn net.Conn, ch chan []byte, ctx context.Context) {
 	for {
 		sizeBuf := make([]byte, 4)
 		_, err := io.ReadFull(conn, sizeBuf)
 		if err != nil {
-			if err == io.EOF {
-				fmt.Println("El servidor cerró la conexión.")
-				return
-			}
-			fmt.Print(err)
+			fmt.Print("An error ocurred with the proxy connection",err)
 			return
 		}
 
@@ -34,12 +31,17 @@ func HandleReceive(conn net.Conn, ch chan []byte) {
 
 		fmt.Printf("Received: %s\n", msgBuf)
 		ch <- msgBuf
+
+		select{
+		case <-ctx.Done():
+			fmt.Println("gtting out of the receivng tcp data")
+			return
+		}
+	
 	}
 }
 
-func HandleSend(ch chan []byte, conn net.Conn) {
-	for {
-		response := <-ch
+func HandleSendToTCP(response []byte, conn net.Conn) {
 		fmt.Println("VOY A ENVIAR", response)
 		lenght := uint32(len(response))
 
@@ -57,5 +59,4 @@ func HandleSend(ch chan []byte, conn net.Conn) {
 			return
 		}
 		fmt.Println("sendet Hello server message")
-	}
 }

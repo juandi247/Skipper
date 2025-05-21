@@ -1,10 +1,13 @@
 package HttpUserClient
 
 import (
+	"SkipperTunnel/TcpUserClient"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -47,33 +50,31 @@ func NewHttpCliennt(addr string, timeout time.Duration) *HttpClient {
 	return client
 }
 
-func ReceiveRequest(requestChannel chan []byte, responsechannel chan []byte, client *HttpClient) {
+func ReceiveRequest(requestChannel chan []byte, responsechannel chan []byte, client *HttpClient, tcpConn net.Conn, ctx context.Context) {
 	for {
-		request := <-requestChannel
-		// send the request.
-		var httpRequest HttpRequest
-		err := json.Unmarshal((request), &httpRequest)
-		if err != nil {
-			fmt.Println("Error al decodificar la request:", err)
-			continue
-		}
-
-		fmt.Println("REQUEST COMPLETa", string(request))
-		fmt.Println("REQUEST COMPLETa", httpRequest)
-
-		requestID := httpRequest.RequestID // <-- Guardamos el requestID una vez
-
-		fmt.Println("REQUEST ID DE LA SOLCITUD!!!", requestID)
-
-		go func() {
-			response, err := ConvertToHttpRequest(&httpRequest, client, requestID)
+		select {
+		case <-ctx.Done():
+			fmt.Println("turning off the handle responses goroutine")
+			return
+		case request := <-requestChannel:
+			// send the request.
+			var httpRequest HttpRequest
+			err := json.Unmarshal((request), &httpRequest)
 			if err != nil {
-				fmt.Errorf("error", err)
-				return
+				fmt.Println("Error al decodificar la request:", err)
+				continue
 			}
-			fmt.Println("AAAAAAAAAAAAAAAAAAAAAa ----------  Enviando al responsechannel:", string(response), " \n") // <--- LOG NUEVO
-			responsechannel <- response
-		}()
+
+			fmt.Println("REQUEST COMPLETa", string(request))
+			fmt.Println("REQUEST COMPLETa", httpRequest)
+
+			requestID := httpRequest.RequestID // <-- Guardamos el requestID una vez
+
+			fmt.Println("REQUEST ID DE LA SOLCITUD!!!", requestID)
+
+			response, _ := ConvertToHttpRequest(&httpRequest, client, requestID)
+			TcpUserClient.HandleSendToTCP(response, tcpConn)
+		}
 	}
 }
 
@@ -151,5 +152,4 @@ func ParseHttpResponse(r *http.Response, requestID string) ([]byte, error) {
 	fmt.Println("respuesta del propio server", string(requestBytes))
 
 	return requestBytes, nil
-
 }

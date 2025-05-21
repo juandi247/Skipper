@@ -22,9 +22,6 @@ type Server struct {
 	MessageChanel chan []byte
 	// todo: a connection map to help later with the wildcard and redirecting routing
 	ConnectionManager *connectionmanager.ConnectionManager
-	// ConnMutext     sync.Mutex
-	// ConnectionMap  map[string]net.Conn
-	// RequestChannel chan TcpMessage
 }
 
 func NewServer(listenAddr string, cm *connectionmanager.ConnectionManager) *Server {

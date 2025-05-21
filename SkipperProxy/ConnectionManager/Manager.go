@@ -1,7 +1,6 @@
 package connectionmanager
 
 import (
-	"SkipperTunnelProxy/message"
 	"fmt"
 	"net"
 	"sync"
@@ -32,13 +31,13 @@ func (cm *ConnectionManager) DeleteTunnelConnection(subdomain string) {
 	delete(cm.TunnelConnectionsMap, subdomain)
 }
 
-func (cm *ConnectionManager) SendMessageToTunnel(subdomain string, message message.TcpMessage) error {
+func (cm *ConnectionManager) SendMessageToTunnel(subdomain string, message []byte) error {
 	cm.Mu.Lock()
 	defer cm.Mu.Unlock()
 	conn, _ := cm.TunnelConnectionsMap[subdomain]
 	fmt.Println("SUBDOMINOOOO", subdomain)
-	fmt.Println(message.Data, "MESAGE DATAAAAAAAAAAA")
-	_, err := conn.Write(message.Data)
+	fmt.Println(message, "MESAGE DATAAAAAAAAAAA")
+	_, err := conn.Write(message)
 	if err != nil {
 		return fmt.Errorf("Error escribiendo a conexión TCP: %v\n", err)
 	}
