@@ -2,6 +2,7 @@ package TcpUserClient
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -9,30 +10,38 @@ import (
 )
 
 // thats to receive data onn a buffer and readed
-func HandleReceive(conn net.Conn, ch chan []byte) {
-	buffer := make([]byte, 1024)
+func HandleReceive(conn net.Conn, ch chan []byte, ctx context.Context) {
 	for {
-		n, err := conn.Read(buffer)
+		sizeBuf := make([]byte, 4)
+		_, err := io.ReadFull(conn, sizeBuf)
 		if err != nil {
-			if err == io.EOF {
-				fmt.Println("El servidor cerró la conexión.")
-				return
-			}
-			fmt.Print(err)
+			fmt.Print("An error ocurred with the proxy connection",err)
 			return
 		}
-		fmt.Printf("Received: %s\n", buffer[:n])
+
+		length := binary.BigEndian.Uint32(sizeBuf)
+		fmt.Println("TENEMOS UN LENGTH THE REQUEST DE", length)
+		msgBuf := make([]byte, length)
 		// Si se reciben datos, envíalos al canal
-		if n > 0 {
-			fmt.Printf("Received: %s\n", buffer[:n])
-			ch <- buffer[:n]
+		_, err = io.ReadFull(conn, msgBuf)
+		if err != nil {
+			fmt.Println("Error leyendo mensaje:", err)
+			break
 		}
+
+		fmt.Printf("Received: %s\n", msgBuf)
+		ch <- msgBuf
+
+		select{
+		case <-ctx.Done():
+			fmt.Println("gtting out of the receivng tcp data")
+			return
+		}
+	
 	}
 }
 
-func HandleSend(ch chan []byte, conn net.Conn) {
-	for {
-		response := <-ch
+func HandleSendToTCP(response []byte, conn net.Conn) {
 		fmt.Println("VOY A ENVIAR", response)
 		lenght := uint32(len(response))
 
@@ -50,5 +59,4 @@ func HandleSend(ch chan []byte, conn net.Conn) {
 			return
 		}
 		fmt.Println("sendet Hello server message")
-	}
 }
