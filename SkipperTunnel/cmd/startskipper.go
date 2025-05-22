@@ -43,19 +43,21 @@ var startskipperCmd = &cobra.Command{
 		clientHttp := HttpUserClient.NewHttpCliennt(localhostUrl, 5*time.Second)
 		// HTTP CLIENTT connection
 		for i := 0; i < 5; i++ {
+			fmt.Println("trying connection")
 			resp, err := clientHttp.Client.Get(localhostUrl)
-			if err != nil {
+			if err==nil{
+				break
+			}else if err!=nil && i==5{
 				fmt.Printf("Could not find an active localhost on port %d, %v ", port, err)
 				gracefullShutdown()
 				resp.Body.Close()
 				// os.Exit(1)
 				return
-			} else {
-				resp.Body.Close()
-				break
-			}
+			} 
+			resp.Body.Close()
+			time.Sleep(2*time.Second)
 		}
-
+	
 		// TCP CONNECTION HANDLER
 		conn, err := net.Dial("tcp", proxyUrl)
 		if err != nil {
