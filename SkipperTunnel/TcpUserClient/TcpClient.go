@@ -11,6 +11,12 @@ import (
 
 // thats to receive data onn a buffer and readed
 func HandleReceive(conn net.Conn, ch chan []byte, ctx context.Context) {
+	select{
+		case <-ctx.Done():
+			fmt.Println("gtting out of the receivng tcp data")
+			return
+		default: 
+		
 	for {
 		sizeBuf := make([]byte, 4)
 		_, err := io.ReadFull(conn, sizeBuf)
@@ -30,14 +36,8 @@ func HandleReceive(conn net.Conn, ch chan []byte, ctx context.Context) {
 		}
 
 		fmt.Printf("Received: %s\n", msgBuf)
-		ch <- msgBuf
-
-		select{
-		case <-ctx.Done():
-			fmt.Println("gtting out of the receivng tcp data")
-			return
-		}
-	
+		ch <- msgBuf	
+	}
 	}
 }
 
