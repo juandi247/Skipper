@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"sync"
 
 	// "runtime"
 	"strconv"
@@ -35,8 +36,7 @@ var startskipperCmd = &cobra.Command{
 	Use:   "startskipper",
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
-		requestChannel := make(chan []byte)
-		responseChannel := make(chan []byte)
+		requestChannel := make(chan []byte, 30)
 		localhostUrl := "http://localhost:" + strconv.Itoa(port)
 		ctx, gracefullShutdown := context.WithCancel(context.Background())
 
@@ -45,19 +45,18 @@ var startskipperCmd = &cobra.Command{
 		for i := 0; i < 5; i++ {
 			fmt.Println("trying connection")
 			resp, err := clientHttp.Client.Get(localhostUrl)
-			if err==nil{
+			if err == nil {
+				resp.Body.Close()
 				break
-			}else if err!=nil && i==5{
+			} else if err != nil && i == 5 {
 				fmt.Printf("Could not find an active localhost on port %d, %v ", port, err)
 				gracefullShutdown()
-				resp.Body.Close()
 				// os.Exit(1)
 				return
-			} 
-			resp.Body.Close()
-			time.Sleep(2*time.Second)
+			}
+			time.Sleep(2 * time.Second)
 		}
-	
+
 		// TCP CONNECTION HANDLER
 		conn, err := net.Dial("tcp", proxyUrl)
 		if err != nil {
@@ -77,35 +76,42 @@ var startskipperCmd = &cobra.Command{
 		}
 		fmt.Println("sendet Hello server message", i)
 
-
-	// TODO: handle correctly with WaitGroup for a better cancelation and with a general select 
-	// TODO: error handling channel for child goroutines
 		// ! GOROUTINES
+		/* wait group (this was made because of the handling 
+		receive from the TCP proxy, the io.ReadFull is a blocking method
+		so using the waitgroup allows us to make use of the context better and then
+		make a good gracefull shutdown without using an empty select{} on the main function) */
+		var wg sync.WaitGroup
 		// ping localhost goroutine
-		go func(ctx context.Context) {
+		wg.Add(17)
+		go func(ctx context.Context, wg *sync.WaitGroup) {
 			for {
 				respPing, err := utils.Ping(localhostUrl, clientHttp.Client)
 				if err != nil || respPing != 200 {
 					fmt.Println("ping ME FALLO to localhost")
 					gracefullShutdown()
+					wg.Done()
 					// os.Exit(1)
 					return
 				}
-				fmt.Println("ping completed to localhost")
+				// fmt.Println("ping completed to localhost")
 				select {
 				case <-time.After(3 * time.Second): // Espera 3 segundos
 				case <-ctx.Done(): // Si el contexto se cancela durante el sleep, sal inmediatamente
 					fmt.Println("Goroutine de ping: Contexto cancelado durante el sleep. Terminando.")
+					wg.Done()
 					return
 				}
 			}
-		}(ctx)
+		}(ctx, &wg)
 		// goroutine for handling tcp connection
-		go TcpUserClient.HandleReceive(conn, requestChannel, ctx)
-		// goruotine to handle send httprequest to localhost and send response using TCP
-		go HttpUserClient.ReceiveRequest(requestChannel, responseChannel, clientHttp, conn, ctx)
+		go TcpUserClient.HandleReceive(conn, requestChannel, ctx, &wg)
 
-		select {}
+		// ! worker pool to handle the requests
+		for i := 0; i < 15; i++ {
+			go HttpUserClient.ReceiveRequest(i, requestChannel, clientHttp, conn, ctx, &wg)
+		}
+		wg.Wait()
 
 	},
 }

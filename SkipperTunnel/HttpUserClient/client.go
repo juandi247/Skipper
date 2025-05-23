@@ -10,9 +10,11 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
+// todo: GRCP communication easier and fasterrr
 type HttpRequest struct {
 	Method    string            `json:"method"`  // GET, POST, PUT, etc.
 	Proto     string            `json:"version"` // HTTP/1.1, HTTP/2
@@ -50,14 +52,16 @@ func NewHttpCliennt(addr string, timeout time.Duration) *HttpClient {
 	return client
 }
 
-func ReceiveRequest(requestChannel chan []byte, responsechannel chan []byte, client *HttpClient, tcpConn net.Conn, ctx context.Context) {
+func ReceiveRequest(workerId int, requestChannel chan []byte, client *HttpClient, tcpConn net.Conn, ctx context.Context, wg *sync.WaitGroup) {
 	for {
 		select {
 		case <-ctx.Done():
 			fmt.Println("turning off the handle responses goroutine")
+			wg.Done()
 			return
 		case request := <-requestChannel:
 			// send the request.
+			fmt.Printf("Worker %d, executing the request\n", workerId)
 			var httpRequest HttpRequest
 			err := json.Unmarshal((request), &httpRequest)
 			if err != nil {
@@ -65,12 +69,7 @@ func ReceiveRequest(requestChannel chan []byte, responsechannel chan []byte, cli
 				continue
 			}
 
-			fmt.Println("REQUEST COMPLETa", string(request))
-			fmt.Println("REQUEST COMPLETa", httpRequest)
-
-			requestID := httpRequest.RequestID // <-- Guardamos el requestID una vez
-
-			fmt.Println("REQUEST ID DE LA SOLCITUD!!!", requestID)
+			requestID := httpRequest.RequestID 
 
 			response, _ := ConvertToHttpRequest(&httpRequest, client, requestID)
 			TcpUserClient.HandleSendToTCP(response, tcpConn)
@@ -115,7 +114,7 @@ func ConvertToHttpRequest(hr *HttpRequest, client *HttpClient, requestID string)
 }
 
 func ParseHttpResponse(r *http.Response, requestID string) ([]byte, error) {
-	fmt.Println("Ejecutando ParseHttpRequest...")
+	// fmt.Println("Ejecutando ParseHttpRequest...")
 
 	// headers read
 	headers := make(map[string]string)
@@ -149,7 +148,7 @@ func ParseHttpResponse(r *http.Response, requestID string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error converting to json")
 	}
-	fmt.Println("respuesta del propio server", string(requestBytes))
+	// fmt.Println("respuesta del propio server", string(requestBytes))
 
 	return requestBytes, nil
 }
