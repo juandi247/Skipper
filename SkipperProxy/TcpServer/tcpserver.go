@@ -92,7 +92,7 @@ func (s *Server) ReviewTunnelConnection(conn net.Conn) (string, error) {
 
 	// Verificar si el subdominio ya está en uso
 	if _, exists := s.ConnectionManager.TunnelConnectionsMap[subdomain]; exists {
-		conn.Write([]byte("The subdomain is already in use"))
+		conn.Write([]byte("The subdomain is already in use please try another"))
 		return "", fmt.Errorf("subdomain already used: %s", subdomain)
 	}
 
