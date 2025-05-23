@@ -4,8 +4,8 @@ import (
 	"SkipperTunnelProxy/HttpServer"
 	tcpserver "SkipperTunnelProxy/TcpServer"
 	"SkipperTunnelProxy/connectionmanager"
+	"SkipperTunnelProxy/worker"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -41,36 +41,19 @@ func main() {
 	fmt.Println("Server is running on http://localhost:8080")
 
 	// ! Run TCP server
-	go func() {
-		for msg := range tcpserver.MessageChanel {
-			fmt.Println("message received", string(msg))
-			var response HttpServer.HttpResponse
-			err := json.Unmarshal(msg, &response)
-			if err != nil {
-				fmt.Println("error parsing resopnee")
-				continue
-			}
 
-			fmt.Println("le vamos a enviarrrrr")
-
-			cm.Mu.Lock()
-			ch, exists := cm.GlobalResponseChannel[response.RequestID]
-
-			fmt.Println("REQUEST ID FROM RESOPNSEEEE", response.RequestID)
-			if exists {
-				// Enviar la respuesta al channel que espera el HTTP handler
-				ch <- msg
-
-				fmt.Println("si existio mensaje le enviamoss!!")
-
-				// Opcional: cerrar el channel y borrarlo del mapa para limpiar
-				close(ch)
-				delete(cm.GlobalResponseChannel, response.RequestID)
-			}
-			fmt.Println("QUE PASO NO PASO NADAAAAAA")
-			cm.Mu.Unlock()
+	wpChannel:= make(chan []byte, 50)
+	go func(){
+		for msg:= range tcpserver.MessageChanel{
+			wpChannel <- msg
 		}
 	}()
+
+	// worker pool
+	for i:=0; i<30;i++{
+		fmt.Println("creating gorotounie", i)
+	go worker.StartWorker(i,wpChannel, cm)
+	}
 
 	go tcpserver.Start()
 

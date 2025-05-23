@@ -17,6 +17,6 @@ func Ping(url string, c *http.Client) (int, error) {
 		return 0, err
 	}
 	resp.Body.Close()
-	fmt.Println("estatus code", resp.StatusCode)
+	// fmt.Println("estatus code", resp.StatusCode)
 	return resp.StatusCode, nil
 }
