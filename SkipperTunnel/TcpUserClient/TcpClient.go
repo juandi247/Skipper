@@ -39,14 +39,14 @@ func HandleReceive(conn net.Conn, ch chan []byte, ctx context.Context, wg *sync.
 				readChannel <- readResult{err: err}
 			}
 
-			fmt.Printf("Received: %s\n", msgBuf)
+			// fmt.Printf("Received: %s\n", msgBuf)
 			readChannel <- readResult{content: msgBuf}
 		}()
 
 		select {
 		case <-ctx.Done():
 			wg.Done()
-			fmt.Println("gtting out of the receivng tcp data")
+			// fmt.Println("gtting out of the receivng tcp data")
 			return
 		case r := <-readChannel:
 			if r.err != nil {
@@ -82,5 +82,5 @@ func HandleSendToTCP(response []byte, conn net.Conn) {
 		fmt.Println("Error:", err)
 		return
 	}
-	fmt.Println("sendet Hello server message")
+	// fmt.Println("sendet Hello server message")
 }

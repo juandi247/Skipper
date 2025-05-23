@@ -52,16 +52,16 @@ func NewHttpCliennt(addr string, timeout time.Duration) *HttpClient {
 	return client
 }
 
-func ReceiveRequest(workerId int, requestChannel chan []byte, client *HttpClient, tcpConn net.Conn, ctx context.Context, wg *sync.WaitGroup) {
+func ReceiveRequest(url string,workerId int, requestChannel chan []byte, client *HttpClient, tcpConn net.Conn, ctx context.Context, wg *sync.WaitGroup) {
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Println("turning off the handle responses goroutine")
+			// fmt.Println("turning off the handle responses goroutine")
 			wg.Done()
 			return
 		case request := <-requestChannel:
 			// send the request.
-			fmt.Printf("Worker %d, executing the request\n", workerId)
+			// fmt.Printf("Worker %d, executing the request\n", workerId)
 			var httpRequest HttpRequest
 			err := json.Unmarshal((request), &httpRequest)
 			if err != nil {
@@ -71,14 +71,14 @@ func ReceiveRequest(workerId int, requestChannel chan []byte, client *HttpClient
 
 			requestID := httpRequest.RequestID 
 
-			response, _ := ConvertToHttpRequest(&httpRequest, client, requestID)
+			response, _ := ConvertToHttpRequest(url,&httpRequest, client, requestID)
 			TcpUserClient.HandleSendToTCP(response, tcpConn)
 		}
 	}
 }
 
-func ConvertToHttpRequest(hr *HttpRequest, client *HttpClient, requestID string) ([]byte, error) {
-	url := "http://localhost:5000"
+func ConvertToHttpRequest(url string, hr *HttpRequest, client *HttpClient, requestID string) ([]byte, error) {
+
 	body := bytes.NewBufferString(hr.Body)
 
 	req, err := http.NewRequest(hr.Method, url+hr.Path, body)
