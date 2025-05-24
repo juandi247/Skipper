@@ -26,14 +26,14 @@ var (
 )
 
 // ? dev
-// const proxyUrl string = "localhost:9000"
+const proxyUrl string = "localhost:9000"
 
 // !prod
-const proxyUrl string = "skipper.lat:80"
+// const proxyUrl string = "skipper.lat:8080"
 
 // startskipperCmd represents the startskipper command
 var startskipperCmd = &cobra.Command{
-	Use:   "skipper start",
+	Use:   "start",
 	Short: "This command starts the tunnel connection and lets you expose your localhost on the web [your-subdomain].skipper.lat,\n to use this command please use the -p (port) flag and the -s (subdomain) flag",
 	Run: func(cmd *cobra.Command, args []string) {
 		requestChannel := make(chan []byte, 30)
