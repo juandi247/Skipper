@@ -56,7 +56,8 @@ func main() {
 	}()
 
 	// worker pool
-	for i:=0; i<30;i++{
+		// todo check worker pool size because of low specificacions of ram on the VM
+	for i:=0; i<15;i++{
 		fmt.Println("creating gorotounie", i)
 	go worker.StartWorker(i,wpChannel, cm)
 	}
