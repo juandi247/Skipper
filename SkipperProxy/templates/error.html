@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Subdomain Not Found | Skipper</title>
+    <style>
+        :root {
+            --primary-blue: #0066cc;
+            --text-color: #333333;
+            --bg-color: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .error-container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 600px;
+        }
+
+        .error-code {
+            font-size: 8rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin: 0;
+            line-height: 1;
+            opacity: 0.8;
+        }
+
+        .error-message {
+            font-size: 2rem;
+            color: var(--text-color);
+            margin: 1rem 0 2rem;
+        }
+
+        .error-description {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .home-button {
+            display: inline-block;
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .home-button:hover {
+            background: #0052a3;
+            transform: translateY(-2px);
+        }
+
+        .tunnel-icon {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+
+        .steps {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .steps h3 {
+            color: var(--primary-blue);
+            margin-top: 0;
+        }
+
+        .steps ol {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .steps li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <img src="/assets/skipperlogo.png" alt="Skipper Logo" class="tunnel-icon">
+        <h1 class="error-code">404</h1>
+        <h2 class="error-message">Skipper Subdomain Not Found</h2>
+        <p class="error-description">
+            Oops! It seems this subdomain is not available yet or doesn't exist.
+        </p>
+        
+        <div class="steps">
+            <h3>If you just started your tunnel:</h3>
+            <ol>
+                <li>Make sure your tunnel is running with the correct subdomain</li>
+                <li>Wait a few seconds for the connection to establish</li>
+                <li>Try refreshing this page</li>
+            </ol>
+        </div>
+
+        <a href="https://skipper.lat" class="home-button">Back to Home</a>
+    </div>
+</body>
+</html>

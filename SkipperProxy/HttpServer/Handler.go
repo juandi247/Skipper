@@ -1,15 +1,15 @@
 package HttpServer
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"strings"
 	"time"
-	"bytes"
-	"encoding/binary"
+	"github.com/google/uuid"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -40,14 +40,35 @@ type HttpResponse struct {
 }
 
 func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
+	host := r.Host
 
-	target := r.Host
-	if idx := strings.Index(target, "."); idx != -1 {
-		target = target[:idx]
+	if strings.Contains(host, ":") {
+		host = strings.Split(host, ":")[0]
 	}
+
+	// const baseDomain = "skipper.lat"
+	const baseDomain = "localhost:8080"
+
+
+
+	parts := strings.Split(host, ".")
+
+	if len(parts) <= 1 {
+	// prod
+	// if len(parts) <= 2 {
+		s.Templates.ExecuteTemplate(w, "index.html", nil)
+		return
+	}
+
+	target := strings.Join(parts[:len(parts)-1], ".") 
+	// prod
+	// target := strings.Join(parts[:len(parts)-2], ".") 
+
+	fmt.Println("TARGETTETTT", target)
+
 	_, err := s.ConnectionManager.GetTunnelConnection(target)
 	if err != nil {
-		fmt.Fprintln(w, "404 - Page not found")
+		s.Templates.ExecuteTemplate(w, "error.html", nil)
 		return
 	}
 	ResponeChannel := make(chan []byte)
@@ -93,7 +114,7 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// !length frame  (4 bytes) for handling the request on the tunnel
-	requestLength:= uint32(len(requestBytes))
+	requestLength := uint32(len(requestBytes))
 	// we create a raw buffer
 	requestBuffer := new(bytes.Buffer)
 	/* we append to the buffer the request length
@@ -104,11 +125,10 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 
 	// so we now write the request on the buffer
 	requestBuffer.Write(requestBytes)
-	
 
 	err = s.ConnectionManager.SendMessageToTunnel(target, requestBuffer.Bytes())
-	fmt.Println("envio un mensajito")
-	fmt.Println("mensaje enviado", string(requestBytes))
+	// fmt.Println("envio un mensajito")
+	// fmt.Println("mensaje enviado", string(requestBytes))
 	s.ConnectionManager.SaveResponseChannel(requestId, ResponeChannel)
 
 	fmt.Println("gamos a esperarrrr")
@@ -117,13 +137,13 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 	case respBytes := <-ResponeChannel:
 		var response HttpResponse
 		err := json.Unmarshal(respBytes, &response)
-		fmt.Println("LLEGO MENSJAEEEEE")
+		// fmt.Println("LLEGO MENSJAEEEEE")
 		if err != nil {
 			http.Error(w, "Error parsing response", http.StatusInternalServerError)
 			return
 		}
 
-		fmt.Printf("\n \n RESPUESTA %v \n", response)
+		// fmt.Printf("\n \n RESPUESTA %v \n", response)
 
 		// TODO : change this becasue somethigns would be a json, so depending on the response we get w.write depending on them
 
@@ -131,7 +151,8 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(response.Body))
 
 	case <-time.After(10 * time.Second):
-		http.Error(w, "Timeout waiting for response", http.StatusGatewayTimeout)
+		s.Templates.ExecuteTemplate(w, "timeout.html", nil)
+
 	}
 
 	// s.TcpRequestChannel <- tcpMessage
@@ -139,7 +160,6 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 	// json.NewEncoder(w).Encode(request)
 
 }
-
 
 // ! for testing too
 type test_struct struct {
@@ -172,4 +192,18 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 	fmt.Fprintln(w, "404 - Page not found")
 
+}
+
+// RegisterHandlers sets up the HTTP routes and static file serving.
+// You should call this function when initializing your HTTP server.
+func (s *Server) RegisterHandlers(mux *http.ServeMux) {
+	mux.HandleFunc("/", s.HandleClientRequest)
+	// Serve static files from the 'assets' directory
+	fs := http.FileServer(http.Dir("./templates/assets"))
+	mux.Handle("/assets/", http.StripPrefix("/assets/", fs))
+
+	// Other existing handlers (adjust paths if necessary)
+	mux.HandleFunc("/parse", ParsePost)
+	mux.HandleFunc("/time", TimeHandler)
+	mux.HandleFunc("/404", NotFoundHandler) // Assuming you might have a direct route for 404
 }

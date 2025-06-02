@@ -7,6 +7,7 @@ import (
 	"SkipperTunnelProxy/worker"
 	"context"
 	"fmt"
+	"html/template"
 	"log"
 	"os"
 	"os/signal"
@@ -20,11 +21,16 @@ func main() {
 
 	// prod environemtn
 	// tcpserver := tcpserver.NewServer(":80", cm)
+	templates, err := template.ParseGlob("templates/*.html")
+	if err != nil {
+		log.Fatalf("Error cargando templates: %v", err)
+	}
 
 	// Run http server
 	s := HttpServer.NewServer(8080, false, cm)
+	s.Templates= templates
 	// ! just for prod enviroment on GCP virtual machine
-	// httpsServer:= HttpServer.NewServer(443, true, cm)
+	// s:= HttpServer.NewServer(443, true, cm)
 
 	s.Router.Any("/*", s.HandleClientRequest)
 	s.Router.ServeFavicon()

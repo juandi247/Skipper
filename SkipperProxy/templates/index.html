@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skipper - Tunnel & Reverse Proxy</title>
+    <style>
+        :root {
+            --primary-blue: #0066cc;
+            --text-color: #333333;
+            --bg-color: #ffffff;
+            --nav-bg: #f8f9fa;
+            --section-bg: #ffffff;
+            --hover-blue: #0052a3;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+        }
+
+        .nav-container {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 250px;
+            background-color: var(--nav-bg);
+            padding: 2rem 1rem;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        .nav-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .nav-logo img {
+            max-width: 120px;
+            height: auto;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-menu a {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-menu a:hover {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .logo-container {
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            max-width: 200px;
+            height: auto;
+        }
+
+        h1 {
+            color: var(--primary-blue);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .description {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .author {
+            font-style: italic;
+            margin-bottom: 2rem;
+        }
+
+        .contact-links {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: transform 0.3s ease;
+        }
+
+        .contact-link:hover {
+            transform: translateY(-2px);
+        }
+
+        .contact-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .star-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #24292e;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-left: 1rem;
+        }
+
+        .star-button:hover {
+            transform: translateY(-2px);
+            background: #2c3238;
+        }
+
+        .star-icon {
+            animation: twinkle 1.5s infinite;
+        }
+
+        @keyframes twinkle {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* GitHub branding for contribute section */
+        .github-branding {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .github-logo {
+            width: 48px;
+            height: 48px;
+            fill: white;
+        }
+
+        .github-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .github-stat {
+            background: rgba(255,255,255,0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .github-link {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .github-link:hover {
+            text-decoration: underline;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+            background-color: var(--section-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: var(--primary-blue);
+            border-bottom: 2px solid var(--primary-blue);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            scroll-margin-top: 2rem;
+        }
+
+        .code-block {
+            background-color: #f5f5f5;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .copy-button:hover {
+            background-color: var(--hover-blue);
+        }
+
+        .usage-example {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #e9ecef;
+            border-radius: 4px;
+        }
+
+        .flag {
+            color: var(--primary-blue);
+            font-weight: 500;
+        }
+
+        .note {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .platform-badges {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .platform-badge {
+            padding: 0.5rem 1rem;
+            background-color: var(--primary-blue);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .architecture-diagram {
+            max-width: 100%;
+            height: auto;
+            margin: 2rem 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .contribute-section {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .contribute-section h3 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .contribute-section a {
+            color: var(--primary-blue);
+            text-decoration: none;
+        }
+
+        .contribute-section a:hover {
+            text-decoration: underline;
+        }
+
+        /* Future Changes Section */
+        .future-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-left: 4px solid var(--primary-blue);
+            padding: 2.5rem;
+        }
+
+        .future-section h2 {
+            color: var(--primary-blue);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card h3 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Contribute Section */
+        .contribute-section {
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+            color: white;
+            padding: 3rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+
+        .contribute-section h2 {
+            color: white;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .contribute-section h3 {
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .contribute-section p {
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 1.5rem;
+        }
+
+        .contribute-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .contribute-section li {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .contribute-section li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .contribute-section a {
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            transition: border-color 0.3s ease;
+        }
+
+        .contribute-section a:hover {
+            border-color: white;
+        }
+
+        .github-button {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .github-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <div class="nav-logo">
+            <img src="/assets/logo.svg" alt="Skipper Logo">
+        </div>
+        <ul class="nav-menu">
+            <li><a href="#installation">Installation</a></li>
+            <li><a href="#usage">Usage</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#future">Future Changes</a></li>
+            <li><a href="#contribute">Contribute</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <header>
+                <div class="logo-container">
+                    <img src="/assets/skipperlogo.png" alt="Skipper Logo" class="logo">
+                </div>
+                <h1>Skipper</h1>
+                <p class="description">
+                    A powerful tunnel and reverse proxy that allows you to expose your localhost projects to the internet through a subdomain. 
+                    Simple, fast, and secure - your local development environment, accessible from anywhere.
+                </p>
+                <div class="platform-badges">
+                    <span class="platform-badge">macOS</span>
+                    <span class="platform-badge">Linux</span>
+                    <span class="platform-badge">Windows</span>
+                </div>
+                <p class="author">
+                    Made with ❤️ by Juan Diego Diaz, a passionate backend and low-level learner developer
+                </p>
+                <div class="contact-links">
+                    <a href="https://github.com/juandi247" class="contact-link" target="_blank">
+                        <svg class="contact-icon" viewBox="0 0 24 24">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        @juandi247
+                    </a>
+                    <a href="mailto:juand.diaza@gmail.com" class="contact-link">
+                        <svg class="contact-icon" viewBox="0 0 24 24">
+                            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                        </svg>
+                        juand.diaza@gmail.com
+                    </a>
+                    <a href="https://linkedin.com/in/juandi247" class="contact-link" target="_blank">
+                        <svg class="contact-icon" viewBox="0 0 24 24">
+                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                        </svg>
+                        LinkedIn
+                    </a>
+                    <a href="https://github.com/juandi247/skipper" class="star-button" target="_blank">
+                        <svg class="star-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z"/>
+                        </svg>
+                        Give me a Star
+                    </a>
+                </div>
+            </header>
+
+            <section id="installation" class="section">
+                <h2>Installation</h2>
+                
+                <h3>Using Homebrew (macOS)</h3>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyToClipboard('brew tap juandi247/skipper')">Copy</button>
+                    <code>brew tap juandi247/skipper</code>
+                </div>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyToClipboard('brew install skipper')">Copy</button>
+                    <code>brew install skipper</code>
+                </div>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyToClipboard('brew upgrade skipper')">Copy</button>
+                    <code>brew upgrade skipper</code>
+                </div>
+                <p class="note">Run this command to update to the latest version when new releases are available.</p>
+
+                <h3>Using Chocolatey (Windows)</h3>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyToClipboard('choco install skipper')">Copy</button>
+                    <code>choco install skipper</code>
+                </div>
+            </section>
+
+            <section id="usage" class="section">
+                <h2>Usage</h2>
+                <p>Getting started with Skipper is as simple as running a single command:</p>
+                
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyToClipboard('skipper start -p 3000 -s myapp')">Copy</button>
+                    <code>skipper start -p 3000 -s myapp</code>
+                </div>
+
+                <div class="usage-example">
+                    <p>This will expose your local application running on port 3000 at:</p>
+                    <code>https://myapp.skipper.lat</code>
+                </div>
+
+                <p>You can also use the full flag names:</p>
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyToClipboard('skipper start --port 3000 --subdomain myapp')">Copy</button>
+                    <code>skipper start --port 3000 --subdomain myapp</code>
+                </div>
+
+                <p class="note">
+                    <span class="flag">-p, --port</span>: The port where your local application is running<br>
+                    <span class="flag">-s, --subdomain</span>: The subdomain you want to use (will be available at subdomain.skipper.lat)
+                </p>
+            </section>
+
+            <section id="how-it-works" class="section">
+                <h2>How It Works</h2>
+                <p>Skipper operates through a sophisticated architecture running on Google Cloud:</p>
+                
+                <div class="architecture-diagram">
+                    <!-- Add your architecture diagram here -->
+                    <!-- <img src="/assets/architecture.svg" alt="Skipper Architecture" style="width: 100%;"> -->
+                </div>
+
+                <p>The system consists of two main components:</p>
+                <ul>
+                    <li><strong>HTTP Server:</strong> Handles incoming web requests and routes them based on subdomains</li>
+                    <li><strong>TCP Server:</strong> Manages secure tunnels between the cloud and your local machine</li>
+                </ul>
+
+                <p>When you start Skipper:</p>
+                <ol>
+                    <li>A secure tunnel is established between your local machine and our cloud infrastructure</li>
+                    <li>Requests to your subdomain are received by the HTTP server</li>
+                    <li>Using goroutines and worker pools, requests are efficiently routed through the tunnel</li>
+                    <li>Your local application processes the request and sends the response back through the tunnel</li>
+                    <li>The response is delivered to the end user through the HTTP server</li>
+                </ol>
+            </section>
+
+            <section id="future" class="section future-section">
+                <h2>Future Changes</h2>
+                <p>We're constantly working to improve Skipper. Here's what's coming next:</p>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>Protocol Buffers</h3>
+                        <p>Implementation of Protocol Buffers for more efficient and type-safe communication between services.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>WebSocket Support</h3>
+                        <p>Full WebSocket support for real-time bidirectional communication through your tunnels.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Server-Sent Events</h3>
+                        <p>Native support for SSE, enabling efficient server-to-client streaming.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Request Dashboard</h3>
+                        <p>Real-time monitoring dashboard to track and analyze requests to your subdomains.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Connection Management</h3>
+                        <p>Enhanced connection handling with automatic reconnection and load balancing.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Custom Domains</h3>
+                        <p>Support for custom domains with automatic SSL certificate management.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="contribute" class="section contribute-section">
+                <div class="github-branding">
+                    <svg class="github-logo" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    <div>
+                        <h2>Contribute</h2>
+                        <div class="github-stats">
+                            <span class="github-stat">⭐ Stars</span>
+                            <span class="github-stat">🔀 Forks</span>
+                            <span class="github-stat">👥 Contributors</span>
+                        </div>
+                    </div>
+                </div>
+                <h3>Want to help make Skipper better?</h3>
+                <p>We welcome contributions from the community! Here's how you can help:</p>
+                <ul>
+                    <li>Submit a Pull Request with your improvements</li>
+                    <li>Report bugs on our <a href="https://github.com/juandi247/skipper/issues" target="_blank">GitHub Issues</a> page</li>
+                    <li>Suggest new features or improvements</li>
+                    <li>Help improve our documentation</li>
+                </ul>
+                <a href="https://github.com/juandi247/skipper" target="_blank" class="github-button">
+                    Check out our GitHub repository
+                </a>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

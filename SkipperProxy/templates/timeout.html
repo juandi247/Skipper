@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Timeout | Skipper</title>
+    <style>
+        :root {
+            --primary-blue: #0066cc;
+            --text-color: #333333;
+            --bg-color: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .error-container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 600px;
+        }
+
+        .error-code {
+            font-size: 8rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin: 0;
+            line-height: 1;
+            opacity: 0.8;
+        }
+
+        .error-message {
+            font-size: 2rem;
+            color: var(--text-color);
+            margin: 1rem 0 2rem;
+        }
+
+        .error-description {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .home-button {
+            display: inline-block;
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .home-button:hover {
+            background: #0052a3;
+            transform: translateY(-2px);
+        }
+
+        .timeout-icon {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .steps {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .steps h3 {
+            color: var(--primary-blue);
+            margin-top: 0;
+        }
+
+        .steps ol {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .steps li {
+            margin-bottom: 0.5rem;
+        }
+
+        .status-box {
+            background: rgba(0, 102, 204, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <img src="/assets/skipperlogo.png" alt="Skipper Logo" class="timeout-icon">
+        <h1 class="error-code">504</h1>
+        <h2 class="error-message">Connection Timeout</h2>
+        <p class="error-description">
+            We found your subdomain, but the connection to your local server timed out.
+        </p>
+        
+        <div class="status-box">
+            Status: Waiting for response from local server
+        </div>
+
+        <div class="steps">
+            <h3>Possible solutions:</h3>
+            <ol>
+                <li>Check if your local server is running and accessible</li>
+                <li>Verify that your tunnel is properly connected</li>
+                <li>Ensure your local server is responding within the timeout period</li>
+                <li>Try restarting your tunnel connection</li>
+            </ol>
+        </div>
+
+        <a href="https://skipper.lat" class="home-button">Back to Home</a>
+    </div>
+</body>
+</html>

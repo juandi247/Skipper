@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"html/template"
 )
 
 type Server struct {
@@ -18,6 +19,8 @@ type Server struct {
 	keyFile           string
 	useHTTPS          bool
 	ConnectionManager *connectionmanager.ConnectionManager
+	Templates          *template.Template 
+
 }
 
 type ServerOption func(*Server)
