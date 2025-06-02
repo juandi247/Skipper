@@ -29,7 +29,7 @@ var (
 const proxyUrl string = "localhost:9000"
 
 // !prod
-// const proxyUrl string = "skipper.lat:8080"
+// const proxyUrl string = "skipper.lat:9000"
 
 // startskipperCmd represents the startskipper command
 var startskipperCmd = &cobra.Command{

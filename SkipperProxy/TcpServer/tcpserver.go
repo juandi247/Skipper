@@ -134,7 +134,7 @@ func (s *Server) ReadLoop(conn net.Conn, subdomain string) {
 			break
 		}
 
-		fmt.Println("Mensaje completo recibido:", string(msgBuf))
+		// fmt.Println("Mensaje completo recibido:", string(msgBuf))
 		s.MessageChanel <- msgBuf
 	}
 

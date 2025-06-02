@@ -15,7 +15,7 @@ type ConnectionManager struct {
 func NewConnectionManager() *ConnectionManager {
 	return &ConnectionManager{
 		TunnelConnectionsMap:  make(map[string]net.Conn),
-		Mu:                    *&sync.Mutex{},
+		Mu:                    sync.Mutex{},
 		GlobalResponseChannel: make(map[string]chan []byte),
 	}
 }
@@ -34,12 +34,12 @@ func (cm *ConnectionManager) DeleteTunnelConnection(subdomain string) {
 func (cm *ConnectionManager) SendMessageToTunnel(subdomain string, message []byte) error {
 	cm.Mu.Lock()
 	defer cm.Mu.Unlock()
-	conn, _ := cm.TunnelConnectionsMap[subdomain]
-	fmt.Println("SUBDOMINOOOO", subdomain)
-	fmt.Println(message, "MESAGE DATAAAAAAAAAAA")
+	conn := cm.TunnelConnectionsMap[subdomain]
+	// fmt.Println("SUBDOMINOOOO", subdomain)
+	// fmt.Println(message, "MESAGE DATAAAAAAAAAAA")
 	_, err := conn.Write(message)
 	if err != nil {
-		return fmt.Errorf("Error escribiendo a conexión TCP: %v\n", err)
+		return fmt.Errorf("error escribiendo a conexión TCP: %v\n", err)
 	}
 	return nil
 }

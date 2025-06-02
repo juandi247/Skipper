@@ -1,42 +1,22 @@
 package HttpServer
 
 import (
+	"SkipperTunnelProxy/gen"
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
+	"google.golang.org/protobuf/proto"
 	"io"
 	"net/http"
 	"strings"
 	"time"
-	"github.com/google/uuid"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprintf(w, "welcome to juandi http")
-}
-
-type HttpRequest struct {
-	Method    string            `json:"method"`  // GET, POST, PUT, etc.
-	Proto     string            `json:"version"` // HTTP/1.1, HTTP/2
-	TargetUri string            `json:"target"`  // todo: the subdomain that the user will select on tunnel
-	Path      string            `json:"path"`    // "/api/endpoint", "/login", etc.
-	Header    map[string]string `json:"headers"` // Cookies, tokens. It is always a map
-	Body      string            `json:"body"`    // Body
-	RequestID string            `json:"requestID"`
-}
-
-type HttpResponse struct {
-	Status     string `json:"status"`
-	StatusCode int    `json:"statusCode"`
-	// dont think i need those protos but for now
-	ProtoMajor int               // e.g. 1
-	ProtoMinor int               // e.g. 0
-	Proto      string            `json:"version"` // HTTP/1.1, HTTP/2
-	Header     map[string]string `json:"headers"` // Cookies, tokens. It is always a map
-	Body       string            `json:"body"`    // Body
-	RequestID  string            `json:"requestID"`
 }
 
 func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
@@ -49,22 +29,20 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 	// const baseDomain = "skipper.lat"
 	const baseDomain = "localhost:8080"
 
-
-
 	parts := strings.Split(host, ".")
 
 	if len(parts) <= 1 {
-	// prod
-	// if len(parts) <= 2 {
+		// prod
+		// if len(parts) <= 2 {
 		s.Templates.ExecuteTemplate(w, "index.html", nil)
 		return
 	}
 
-	target := strings.Join(parts[:len(parts)-1], ".") 
+	target := strings.Join(parts[:len(parts)-1], ".")
 	// prod
-	// target := strings.Join(parts[:len(parts)-2], ".") 
+	// target := strings.Join(parts[:len(parts)-2], ".")
 
-	fmt.Println("TARGETTETTT", target)
+	// fmt.Println("TARGETTETTT", target)
 
 	_, err := s.ConnectionManager.GetTunnelConnection(target)
 	if err != nil {
@@ -73,8 +51,6 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	ResponeChannel := make(chan []byte)
 	requestId := uuid.New().String()
-
-	fmt.Println("YA PASE VALIDACIONNNN!!!")
 
 	// headers read
 	headers := make(map[string]string)
@@ -98,18 +74,19 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request := HttpRequest{
+	request := &gen.Request{
 		Method:    r.Method,
 		Proto:     r.Proto,
 		TargetUri: r.Host,
 		Path:      r.URL.RequestURI(),
-		Header:    headers,
+		Headers:   headers,
 		Body:      string(bodyBytes),
-		RequestID: requestId,
+		RequestId: requestId,
 	}
-	requestBytes, err := json.Marshal(request)
+
+	requestBytes, err := proto.Marshal(request)
 	if err != nil {
-		http.Error(w, "Error al convertir la solicitud a JSON", http.StatusInternalServerError)
+		http.Error(w, "Error al convertir la solicitud a BYTES", http.StatusInternalServerError)
 		return
 	}
 
@@ -135,8 +112,8 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case respBytes := <-ResponeChannel:
-		var response HttpResponse
-		err := json.Unmarshal(respBytes, &response)
+		var response gen.Response
+		err := proto.Unmarshal(respBytes, &response)
 		// fmt.Println("LLEGO MENSJAEEEEE")
 		if err != nil {
 			http.Error(w, "Error parsing response", http.StatusInternalServerError)

@@ -28,7 +28,7 @@ func main() {
 
 	// Run http server
 	s := HttpServer.NewServer(8080, false, cm)
-	s.Templates= templates
+	s.Templates = templates
 	// ! just for prod enviroment on GCP virtual machine
 	// s:= HttpServer.NewServer(443, true, cm)
 
@@ -48,17 +48,18 @@ func main() {
 
 	// ! Run TCP server
 
-	wpChannel:= make(chan []byte, 50)
-	go func(){
-		for msg:= range tcpserver.MessageChanel{
+	wpChannel := make(chan []byte, 50)
+	go func() {
+		for msg := range tcpserver.MessageChanel {
 			wpChannel <- msg
 		}
 	}()
 
 	// worker pool
-	for i:=0; i<30;i++{
+	// todo check worker pool size because of low specificacions of ram on the VM
+	for i := 0; i < 15; i++ {
 		fmt.Println("creating gorotounie", i)
-	go worker.StartWorker(i,wpChannel, cm)
+		go worker.StartWorker(i, wpChannel, cm)
 	}
 
 	go tcpserver.Start()
