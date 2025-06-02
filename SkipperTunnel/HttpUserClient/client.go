@@ -2,9 +2,9 @@ package HttpUserClient
 
 import (
 	"SkipperTunnel/TcpUserClient"
+	"SkipperTunnel/gen"
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net"
@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"google.golang.org/protobuf/proto"
 )
 
 // todo: GRCP communication easier and fasterrr
@@ -62,14 +63,14 @@ func ReceiveRequest(url string,workerId int, requestChannel chan []byte, client 
 		case request := <-requestChannel:
 			// send the request.
 			// fmt.Printf("Worker %d, executing the request\n", workerId)
-			var httpRequest HttpRequest
-			err := json.Unmarshal((request), &httpRequest)
+			var httpRequest gen.Request
+			err := proto.Unmarshal((request), &httpRequest)
 			if err != nil {
 				fmt.Println("Error al decodificar la request:", err)
 				continue
 			}
 
-			requestID := httpRequest.RequestID 
+			requestID := httpRequest.RequestId 
 
 			response, _ := ConvertToHttpRequest(url,&httpRequest, client, requestID)
 			TcpUserClient.HandleSendToTCP(response, tcpConn)
@@ -77,7 +78,7 @@ func ReceiveRequest(url string,workerId int, requestChannel chan []byte, client 
 	}
 }
 
-func ConvertToHttpRequest(url string, hr *HttpRequest, client *HttpClient, requestID string) ([]byte, error) {
+func ConvertToHttpRequest(url string, hr *gen.Request, client *HttpClient, requestID string) ([]byte, error) {
 
 	body := bytes.NewBufferString(hr.Body)
 
@@ -87,7 +88,7 @@ func ConvertToHttpRequest(url string, hr *HttpRequest, client *HttpClient, reque
 	}
 
 	// Agregar los headers
-	for k, v := range hr.Header {
+	for k, v := range hr.Headers {
 		req.Header.Set(k, v)
 	}
 
@@ -137,14 +138,14 @@ func ParseHttpResponse(r *http.Response, requestID string) ([]byte, error) {
 		return nil, fmt.Errorf("error reading body")
 	}
 
-	response := HttpResponse{
+	response := &gen.Response{
 		Status:    r.Status,
 		Proto:     r.Proto,
-		Header:    headers,
+		Headers:    headers,
 		Body:      string(bodyBytes),
-		RequestID: requestID,
+		RequestId: requestID,
 	}
-	requestBytes, err := json.Marshal(response)
+	requestBytes, err := proto.Marshal(response)
 	if err != nil {
 		return nil, fmt.Errorf("error converting to json")
 	}

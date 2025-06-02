@@ -10,33 +10,14 @@ import (
 	"strings"
 	"time"
 	"github.com/google/uuid"
+ 	"google.golang.org/protobuf/proto"
+	"SkipperTunnelProxy/gen"
+
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprintf(w, "welcome to juandi http")
-}
-
-type HttpRequest struct {
-	Method    string            `json:"method"`  // GET, POST, PUT, etc.
-	Proto     string            `json:"version"` // HTTP/1.1, HTTP/2
-	TargetUri string            `json:"target"`  // todo: the subdomain that the user will select on tunnel
-	Path      string            `json:"path"`    // "/api/endpoint", "/login", etc.
-	Header    map[string]string `json:"headers"` // Cookies, tokens. It is always a map
-	Body      string            `json:"body"`    // Body
-	RequestID string            `json:"requestID"`
-}
-
-type HttpResponse struct {
-	Status     string `json:"status"`
-	StatusCode int    `json:"statusCode"`
-	// dont think i need those protos but for now
-	ProtoMajor int               // e.g. 1
-	ProtoMinor int               // e.g. 0
-	Proto      string            `json:"version"` // HTTP/1.1, HTTP/2
-	Header     map[string]string `json:"headers"` // Cookies, tokens. It is always a map
-	Body       string            `json:"body"`    // Body
-	RequestID  string            `json:"requestID"`
 }
 
 func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +29,6 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 
 	// const baseDomain = "skipper.lat"
 	const baseDomain = "localhost:8080"
-
 
 
 	parts := strings.Split(host, ".")
@@ -91,6 +71,7 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+
 	// body read
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -98,20 +79,25 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request := HttpRequest{
+	request := &gen.Request{
 		Method:    r.Method,
 		Proto:     r.Proto,
 		TargetUri: r.Host,
 		Path:      r.URL.RequestURI(),
-		Header:    headers,
+		Headers:    headers,
 		Body:      string(bodyBytes),
-		RequestID: requestId,
+		RequestId: requestId,
 	}
-	requestBytes, err := json.Marshal(request)
+	
+	
+	requestBytes, err := proto.Marshal(request)
 	if err != nil {
-		http.Error(w, "Error al convertir la solicitud a JSON", http.StatusInternalServerError)
+		http.Error(w, "Error al convertir la solicitud a BYTES", http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Println("sirvieron los marshalsssss")
+
 
 	// !length frame  (4 bytes) for handling the request on the tunnel
 	requestLength := uint32(len(requestBytes))
@@ -135,8 +121,8 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case respBytes := <-ResponeChannel:
-		var response HttpResponse
-		err := json.Unmarshal(respBytes, &response)
+		var response gen.Response
+		err := proto.Unmarshal(respBytes, &response)
 		// fmt.Println("LLEGO MENSJAEEEEE")
 		if err != nil {
 			http.Error(w, "Error parsing response", http.StatusInternalServerError)
