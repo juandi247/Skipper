@@ -35,8 +35,8 @@ func (cm *ConnectionManager) SendMessageToTunnel(subdomain string, message []byt
 	cm.Mu.Lock()
 	defer cm.Mu.Unlock()
 	conn := cm.TunnelConnectionsMap[subdomain]
-	fmt.Println("SUBDOMINOOOO", subdomain)
-	fmt.Println(message, "MESAGE DATAAAAAAAAAAA")
+	// fmt.Println("SUBDOMINOOOO", subdomain)
+	// fmt.Println(message, "MESAGE DATAAAAAAAAAAA")
 	_, err := conn.Write(message)
 	if err != nil {
 		return fmt.Errorf("error escribiendo a conexión TCP: %v\n", err)

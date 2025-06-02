@@ -5,8 +5,8 @@ import (
 	"SkipperTunnelProxy/connectionmanager"
 	"context"
 	"fmt"
-	"net/http"
 	"html/template"
+	"net/http"
 )
 
 type Server struct {
@@ -19,8 +19,7 @@ type Server struct {
 	keyFile           string
 	useHTTPS          bool
 	ConnectionManager *connectionmanager.ConnectionManager
-	Templates          *template.Template 
-
+	Templates         *template.Template
 }
 
 type ServerOption func(*Server)

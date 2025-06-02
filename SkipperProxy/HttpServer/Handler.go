@@ -1,18 +1,17 @@
 package HttpServer
 
 import (
+	"SkipperTunnelProxy/gen"
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
+	"google.golang.org/protobuf/proto"
 	"io"
 	"net/http"
 	"strings"
 	"time"
-	"github.com/google/uuid"
- 	"google.golang.org/protobuf/proto"
-	"SkipperTunnelProxy/gen"
-
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,21 +29,20 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 	// const baseDomain = "skipper.lat"
 	const baseDomain = "localhost:8080"
 
-
 	parts := strings.Split(host, ".")
 
 	if len(parts) <= 1 {
-	// prod
-	// if len(parts) <= 2 {
+		// prod
+		// if len(parts) <= 2 {
 		s.Templates.ExecuteTemplate(w, "index.html", nil)
 		return
 	}
 
-	target := strings.Join(parts[:len(parts)-1], ".") 
+	target := strings.Join(parts[:len(parts)-1], ".")
 	// prod
-	// target := strings.Join(parts[:len(parts)-2], ".") 
+	// target := strings.Join(parts[:len(parts)-2], ".")
 
-	fmt.Println("TARGETTETTT", target)
+	// fmt.Println("TARGETTETTT", target)
 
 	_, err := s.ConnectionManager.GetTunnelConnection(target)
 	if err != nil {
@@ -53,8 +51,6 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	ResponeChannel := make(chan []byte)
 	requestId := uuid.New().String()
-
-	fmt.Println("YA PASE VALIDACIONNNN!!!")
 
 	// headers read
 	headers := make(map[string]string)
@@ -71,7 +67,6 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-
 	// body read
 	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -84,20 +79,16 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 		Proto:     r.Proto,
 		TargetUri: r.Host,
 		Path:      r.URL.RequestURI(),
-		Headers:    headers,
+		Headers:   headers,
 		Body:      string(bodyBytes),
 		RequestId: requestId,
 	}
-	
-	
+
 	requestBytes, err := proto.Marshal(request)
 	if err != nil {
 		http.Error(w, "Error al convertir la solicitud a BYTES", http.StatusInternalServerError)
 		return
 	}
-
-	fmt.Println("sirvieron los marshalsssss")
-
 
 	// !length frame  (4 bytes) for handling the request on the tunnel
 	requestLength := uint32(len(requestBytes))

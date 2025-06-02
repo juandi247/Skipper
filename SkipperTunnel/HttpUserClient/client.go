@@ -6,13 +6,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"google.golang.org/protobuf/proto"
 	"io"
 	"net"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
-	"google.golang.org/protobuf/proto"
 )
 
 // todo: GRCP communication easier and fasterrr
@@ -53,7 +53,7 @@ func NewHttpCliennt(addr string, timeout time.Duration) *HttpClient {
 	return client
 }
 
-func ReceiveRequest(url string,workerId int, requestChannel chan []byte, client *HttpClient, tcpConn net.Conn, ctx context.Context, wg *sync.WaitGroup) {
+func ReceiveRequest(url string, workerId int, requestChannel chan []byte, client *HttpClient, tcpConn net.Conn, ctx context.Context, wg *sync.WaitGroup) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -70,9 +70,9 @@ func ReceiveRequest(url string,workerId int, requestChannel chan []byte, client 
 				continue
 			}
 
-			requestID := httpRequest.RequestId 
+			requestID := httpRequest.RequestId
 
-			response, _ := ConvertToHttpRequest(url,&httpRequest, client, requestID)
+			response, _ := ConvertToHttpRequest(url, &httpRequest, client, requestID)
 			TcpUserClient.HandleSendToTCP(response, tcpConn)
 		}
 	}
@@ -141,7 +141,7 @@ func ParseHttpResponse(r *http.Response, requestID string) ([]byte, error) {
 	response := &gen.Response{
 		Status:    r.Status,
 		Proto:     r.Proto,
-		Headers:    headers,
+		Headers:   headers,
 		Body:      string(bodyBytes),
 		RequestId: requestID,
 	}
