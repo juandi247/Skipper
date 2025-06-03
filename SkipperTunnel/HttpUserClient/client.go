@@ -16,27 +16,6 @@ import (
 )
 
 // todo: GRCP communication easier and fasterrr
-type HttpRequest struct {
-	Method    string            `json:"method"`  // GET, POST, PUT, etc.
-	Proto     string            `json:"version"` // HTTP/1.1, HTTP/2
-	TargetUri string            `json:"target"`  // todo: the subdomain that the user will select on tunnel
-	Path      string            `json:"path"`    // "/api/endpoint", "/login", etc.
-	Header    map[string]string `json:"headers"` // Cookies, tokens. It is always a map
-	Body      string            `json:"body"`    // Body
-	RequestID string            `json:"requestID"`
-}
-
-type HttpResponse struct {
-	Status     string `json:"status"`
-	StatusCode int    `json:"statusCode"`
-	// dont think i need those protos but for now
-	ProtoMajor int               // e.g. 1
-	ProtoMinor int               // e.g. 0
-	Proto      string            `json:"version"` // HTTP/1.1, HTTP/2
-	Header     map[string]string `json:"headers"` // Cookies, tokens. It is always a map
-	Body       string            `json:"body"`    // Body
-	RequestID  string            `json:"requestID"`
-}
 
 type HttpClient struct {
 	Addr   string
@@ -119,17 +98,8 @@ func ParseHttpResponse(r *http.Response, requestID string) ([]byte, error) {
 
 	// headers read
 	headers := make(map[string]string)
-	validHeaders := map[string]bool{
-		"User-Agent":     true,
-		"Content-Type":   true,
-		"Authorization":  true,
-		"Accept":         true,
-		"Content-Length": true,
-	}
 	for key, value := range r.Header {
-		if validHeaders[key] {
 			headers[key] = strings.Join(value, ", ")
-		}
 	}
 
 	// body read
@@ -140,6 +110,9 @@ func ParseHttpResponse(r *http.Response, requestID string) ([]byte, error) {
 
 	response := &gen.Response{
 		Status:    r.Status,
+		StatusCode: int32(r.StatusCode),
+		ProtoMajor: int32(r.ProtoMajor),
+		ProtoMinor: int32(r.ProtoMinor),
 		Proto:     r.Proto,
 		Headers:   headers,
 		Body:      string(bodyBytes),
@@ -149,7 +122,6 @@ func ParseHttpResponse(r *http.Response, requestID string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error converting to json")
 	}
-	// fmt.Println("respuesta del propio server", string(requestBytes))
-
+// fmt.Printf("respuesta del server %vy", response.Body )
 	return requestBytes, nil
 }

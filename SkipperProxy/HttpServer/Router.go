@@ -74,17 +74,22 @@ func (r *Router) PUT(path string, handler Handler) {
 func (r *Router) DELETE(path string, handler Handler) {
 	r.addRoute(http.MethodDelete, path, handler)
 }
-
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	handler, err := r.findHandler(req.Method, req.URL.Path)
-	if err != nil {
-		r.notfoundHandler(w, req)
-		return
+	method := req.Method
+	path := req.URL.Path
+
+	if handlers, ok := r.routes[method]; ok {
+		if handler, ok := handlers[path]; ok {
+			handler(w, req)
+			return
+		}
+
+		if handler, ok := handlers["/*"]; ok {
+			handler(w, req)
+			return
+		}
 	}
-	// if r.server != nil {
-	//  handler = r.server.ApplyMiddleware(handler)
-	// }
-	handler(w, req)
+	r.notfoundHandler(w, req)
 }
 
 func (r *Router) findHandler(method, path string) (Handler, error) {
