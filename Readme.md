@@ -16,7 +16,7 @@
   <p>
     <a href="https://github.com/juandi247" target="_blank">GitHub: @juandi247</a> |
     <a href="mailto:juand.diaza@gmail.com">Email: juand.diaza@gmail.com</a> |
-    <a href="https://linkedin.com/in/juandi247" target="_blank">LinkedIn</a>
+    <a href="https://www.linkedin.com/in/juan-diego-diaz-92a857238/" target="_blank">LinkedIn</a>
   </p>
   <p>
     <a href="https://github.com/juandi247/skipper" target="_blank" style="background-color:#28a745; color:white; padding: 8px 15px; text-decoration:none; border-radius:5px;">⭐ Give me a Star on GitHub</a>
