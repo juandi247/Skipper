@@ -109,6 +109,13 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		//! check for the body if its empty (is because of ETAGs or something chache related, check that later!!)
+		if response.Body == "" {
+			fmt.Println("VINO VACIAAAA")
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
+
 		// fmt.Printf("recibi una respuesta", response.Body)
 
 		// TODO : change this becasue somethigns would be a json, so depending on the response we get w.write depending on them
