@@ -1,8 +1,8 @@
 package HttpServer
 
 import (
-	// tcpserver "SkipperTunnelProxy/TcpServer"
-	"SkipperTunnelProxy/connectionmanager"
+	"SkipperProxy/config"
+	"SkipperProxy/connectionmanager"
 	"context"
 	"fmt"
 	"html/template"
@@ -10,7 +10,7 @@ import (
 )
 
 type Server struct {
-	port   int
+	port   int16
 	Router *Router
 	// middlewares  []Middleware
 	errorHandler      ErrorHandler
@@ -20,16 +20,18 @@ type Server struct {
 	useHTTPS          bool
 	ConnectionManager *connectionmanager.ConnectionManager
 	Templates         *template.Template
+	Config            config.Config
 }
 
 type ServerOption func(*Server)
 
-func NewServer(port int, useHTTPS bool, connectionManager *connectionmanager.ConnectionManager) *Server {
+func NewServer(port int16, useHTTPS bool, connectionManager *connectionmanager.ConnectionManager, config config.Config) *Server {
 	s := &Server{
 		port: port,
 		// TcpRequestChannel: ch,
 		useHTTPS:          useHTTPS,
 		ConnectionManager: connectionManager,
+		Config: config,
 	}
 	if useHTTPS {
 		s.certFile = "/etc/letsencrypt/live/skipper.lat-0001/fullchain.pem"

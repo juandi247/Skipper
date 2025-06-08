@@ -1,7 +1,7 @@
 package HttpServer
 
 import (
-	"SkipperTunnelProxy/gen"
+	"SkipperProxy/gen"
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
@@ -22,26 +22,18 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 	host := r.Host
 
+	// todo: set this as a separate function called getTarget subdomain
 	if strings.Contains(host, ":") {
 		host = strings.Split(host, ":")[0]
 	}
-
-	// const baseDomain = "skipper.lat"
-	const baseDomain = "localhost:8080"
-
 	parts := strings.Split(host, ".")
-
-	if len(parts) <= 1 {
-		// prod
-		// if len(parts) <= 2 {
+	if len(parts) <= s.Config.DomainParts {
 		fmt.Println("nos toco entrsar a localhost", host, r.URL.RequestURI())
 		s.Templates.ExecuteTemplate(w, "index.html", nil)
 		return
 	}
 
-	target := strings.Join(parts[:len(parts)-1], ".")
-	// prod
-	// target := strings.Join(parts[:len(parts)-2], ".")
+	target := strings.Join(parts[:len(parts)-s.Config.DomainParts], ".")
 
 	_, err := s.ConnectionManager.GetTunnelConnection(target)
 	if err != nil {
