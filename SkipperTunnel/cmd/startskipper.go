@@ -35,7 +35,7 @@ var startskipperCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		config := config.LoadConfig(Env)
-		fmt.Println("MIM CONFIG ES", Env, config.ProxyUrl)
+		// fmt.Println("MIM CONFIG ES", Env, config.ProxyUrl)
 		requestChannel := make(chan []byte, 30)
 		localhostUrl := "http://localhost:" + strconv.Itoa(port)
 		ctx, gracefullShutdown := context.WithCancel(context.Background())
