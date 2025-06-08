@@ -15,18 +15,16 @@ builds:
       - arm64
     ldflags:
       - -s -w -X main.Env=PROD
-  
 brews:
-  -
-    name: skipper 
+  - name: skipper
     repository:
-    owner: juandi247 
-    name: homebrew-skipper 
+      owner: juandi247
+      name: homebrew-skipper
     commit_author:
-    name: Goreleaser Bot .
-    email: juand.diaza@gmail.com 
-    description: "skipper is a tunnel and a reverse proxy that enables you to share your localhost free using just a subdomain from the skipper.lat domain" # Descripción para Homebrew.
-    homepage: "https://skipper.lat" 
+      name: Goreleaser Bot .
+      email: juand.diaza@gmail.com
+    description: "skipper is a tunnel and a reverse proxy..."
+    homepage: "https://skipper.lat"
     license: "MIT"
 
 chocolateys:
