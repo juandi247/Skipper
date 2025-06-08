@@ -30,6 +30,7 @@ brews:
 chocolateys:
   - name: skipper
     title: Skipper Tunnel
+    description: "skipper is a tunnel and a reverse proxy that enables you to share your localhost free using just a subdomain from the skipper.lat domain"
     authors: Juan Diego Diaz
     project_url: https://skipper.lat
     project_source_url: https://github.com/juandi247/Skipper
