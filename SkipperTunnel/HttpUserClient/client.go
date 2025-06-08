@@ -6,13 +6,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"google.golang.org/protobuf/proto"
 	"io"
 	"net"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+	"google.golang.org/protobuf/proto"
 )
 
 // todo: GRCP communication easier and fasterrr
@@ -99,7 +99,7 @@ func ParseHttpResponse(r *http.Response, requestID string) ([]byte, error) {
 	// headers read
 	headers := make(map[string]string)
 	for key, value := range r.Header {
-			headers[key] = strings.Join(value, ", ")
+		headers[key] = strings.Join(value, ", ")
 	}
 
 	// body read
@@ -109,19 +109,19 @@ func ParseHttpResponse(r *http.Response, requestID string) ([]byte, error) {
 	}
 
 	response := &gen.Response{
-		Status:    r.Status,
+		Status:     r.Status,
 		StatusCode: int32(r.StatusCode),
 		ProtoMajor: int32(r.ProtoMajor),
 		ProtoMinor: int32(r.ProtoMinor),
-		Proto:     r.Proto,
-		Headers:   headers,
-		Body:      string(bodyBytes),
-		RequestId: requestID,
+		Proto:      r.Proto,
+		Headers:    headers,
+		Body:       string(bodyBytes),
+		RequestId:  requestID,
 	}
 	requestBytes, err := proto.Marshal(response)
 	if err != nil {
 		return nil, fmt.Errorf("error converting to json")
 	}
-// fmt.Printf("respuesta del server %vy", response.Body )
+	// fmt.Printf("respuesta del server %v \n  statsucode: %v", response.Headers,  response.StatusCode)
 	return requestBytes, nil
 }

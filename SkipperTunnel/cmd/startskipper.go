@@ -6,6 +6,7 @@ package cmd
 import (
 	"SkipperTunnel/HttpUserClient"
 	"SkipperTunnel/TcpUserClient"
+	"SkipperTunnel/config"
 	"SkipperTunnel/utils"
 	"context"
 	"fmt"
@@ -23,19 +24,18 @@ import (
 var (
 	port      int
 	subdomain string
+	Env       string
 )
 
-// ? dev
-const proxyUrl string = "localhost:9000"
-
-// !prod
-// const proxyUrl string = "skipper.lat:9000"
 
 // startskipperCmd represents the startskipper command
 var startskipperCmd = &cobra.Command{
 	Use:   "start",
 	Short: "This command starts the tunnel connection and lets you expose your localhost on the web [your-subdomain].skipper.lat,\n to use this command please use the -p (port) flag and the -s (subdomain) flag",
 	Run: func(cmd *cobra.Command, args []string) {
+
+		config := config.LoadConfig(Env)
+		fmt.Println("MIM CONFIG ES", Env, config.ProxyUrl)
 		requestChannel := make(chan []byte, 30)
 		localhostUrl := "http://localhost:" + strconv.Itoa(port)
 		ctx, gracefullShutdown := context.WithCancel(context.Background())
@@ -60,7 +60,7 @@ var startskipperCmd = &cobra.Command{
 		fmt.Println("Connection Stablished Succesfully")
 
 		// TCP CONNECTION HANDLER
-		conn, err := net.Dial("tcp", proxyUrl)
+		conn, err := net.Dial("tcp", config.ProxyUrl)
 		if err != nil {
 			fmt.Print("Error connecting to Skippers Proxy", err)
 			gracefullShutdown()
@@ -84,32 +84,30 @@ var startskipperCmd = &cobra.Command{
 		make a good gracefull shutdown without using an empty select{} on the main function) */
 		var wg sync.WaitGroup
 		// ping localhost goroutine
-		wg.Add(17)
+		wg.Add(1)
 		go func(ctx context.Context, wg *sync.WaitGroup) {
 			for {
 				respPing, err := utils.Ping(localhostUrl, clientHttp.Client)
 				if err != nil || respPing != 200 {
-					// fmt.Println("ping ME FALLO to localhost")
 					gracefullShutdown()
 					wg.Done()
-					// os.Exit(1)
 					return
 				}
-				// fmt.Println("ping completed to localhost")
 				select {
-				case <-time.After(3 * time.Second): // Espera 3 segundos
-				case <-ctx.Done(): // Si el contexto se cancela durante el sleep, sal inmediatamente
-					// fmt.Println("Goroutine de ping: Contexto cancelado durante el sleep. Terminando.")
+				case <-time.After(3 * time.Second):
+				case <-ctx.Done():
 					wg.Done()
 					return
 				}
 			}
 		}(ctx, &wg)
 		// goroutine for handling tcp connection
+		wg.Add(1)
 		go TcpUserClient.HandleReceive(conn, requestChannel, ctx, &wg)
 
 		// ! worker pool to handle the requests
-		for i := 0; i < 15; i++ {
+		for i := 0; i < config.Workers; i++ {
+			wg.Add(i + 1)
 			go HttpUserClient.ReceiveRequest(localhostUrl, i, requestChannel, clientHttp, conn, ctx, &wg)
 		}
 		wg.Wait()
