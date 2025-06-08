@@ -1,8 +1,8 @@
 package worker
 
 import (
-	"SkipperTunnelProxy/connectionmanager"
-	"SkipperTunnelProxy/gen"
+	"SkipperProxy/connectionmanager"
+	"SkipperProxy/gen"
 	"fmt"
 	"google.golang.org/protobuf/proto"
 )

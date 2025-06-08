@@ -66,7 +66,7 @@ func HandleReceive(conn net.Conn, ch chan []byte, ctx context.Context, wg *sync.
 // 		default:
 
 func HandleSendToTCP(response []byte, conn net.Conn) {
-	// fmt.Println("VOY A ENVIAR", response)
+	fmt.Println("VOY A ENVIARalgo ")
 	lenght := uint32(len(response))
 
 	buf := new(bytes.Buffer)

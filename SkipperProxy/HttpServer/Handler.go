@@ -1,17 +1,17 @@
 package HttpServer
 
 import (
-	"SkipperTunnelProxy/gen"
+	"SkipperProxy/gen"
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
-	"google.golang.org/protobuf/proto"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+	"github.com/google/uuid"
+	"google.golang.org/protobuf/proto"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -22,27 +22,18 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 	host := r.Host
 
+	// todo: set this as a separate function called getTarget subdomain
 	if strings.Contains(host, ":") {
 		host = strings.Split(host, ":")[0]
 	}
-
-	// const baseDomain = "skipper.lat"
-	const baseDomain = "localhost:8080"
-
 	parts := strings.Split(host, ".")
-
-	if len(parts) <= 1 {
-		// prod
-		// if len(parts) <= 2 {
+	if len(parts) <= s.Config.DomainParts {
+		fmt.Println("nos toco entrsar a localhost", host, r.URL.RequestURI())
 		s.Templates.ExecuteTemplate(w, "index.html", nil)
 		return
 	}
 
-	target := strings.Join(parts[:len(parts)-1], ".")
-	// prod
-	// target := strings.Join(parts[:len(parts)-2], ".")
-
-	// fmt.Println("TARGETTETTT", target)
+	target := strings.Join(parts[:len(parts)-s.Config.DomainParts], ".")
 
 	_, err := s.ConnectionManager.GetTunnelConnection(target)
 	if err != nil {
@@ -54,17 +45,8 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 
 	// headers read
 	headers := make(map[string]string)
-	validHeaders := map[string]bool{
-		// "User-Agent":      true,
-		"Content-Type":  true,
-		"Authorization": true,
-		// "Accept":          true,
-		"Content-Length": true,
-	}
 	for key, value := range r.Header {
-		if validHeaders[key] {
-			headers[key] = strings.Join(value, ", ")
-		}
+		headers[key] = strings.Join(value, ", ")
 	}
 
 	// body read
@@ -83,6 +65,7 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 		Body:      string(bodyBytes),
 		RequestId: requestId,
 	}
+	fmt.Printf(" la request se va a hacer con la siguente url %v ", request.Path)
 
 	requestBytes, err := proto.Marshal(request)
 	if err != nil {
@@ -104,11 +87,9 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 	requestBuffer.Write(requestBytes)
 
 	err = s.ConnectionManager.SendMessageToTunnel(target, requestBuffer.Bytes())
-	// fmt.Println("envio un mensajito")
+	// fmt.Println("envie una request", request)
 	// fmt.Println("mensaje enviado", string(requestBytes))
 	s.ConnectionManager.SaveResponseChannel(requestId, ResponeChannel)
-
-	fmt.Println("gamos a esperarrrr")
 
 	select {
 	case respBytes := <-ResponeChannel:
@@ -120,11 +101,24 @@ func (s *Server) HandleClientRequest(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// fmt.Printf("\n \n RESPUESTA %v \n", response)
+		//! check for the body if its empty (is because of ETAGs or something chache related, check that later!!)
+		if response.Body == "" {
+			fmt.Println("VINO VACIAAAA")
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
+
+		// fmt.Printf("recibi una respuesta", response.Body)
 
 		// TODO : change this becasue somethigns would be a json, so depending on the response we get w.write depending on them
 
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		// w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		// w.Write([]byte(response.Body))
+
+		// Puedes también enviar otros headers que recibas, si quieres
+		for key, value := range response.Headers {
+			w.Header().Set(key, value)
+		}
 		w.Write([]byte(response.Body))
 
 	case <-time.After(10 * time.Second):

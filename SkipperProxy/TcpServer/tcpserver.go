@@ -9,7 +9,7 @@ import (
 	// "time"
 
 	// "sync"
-	"SkipperTunnelProxy/connectionmanager"
+	"SkipperProxy/connectionmanager"
 )
 
 // todo: change the type of the channel isntead of bytes, use the json parsing but later

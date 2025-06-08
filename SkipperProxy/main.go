@@ -1,10 +1,11 @@
 package main
 
 import (
-	"SkipperTunnelProxy/HttpServer"
-	tcpserver "SkipperTunnelProxy/TcpServer"
-	"SkipperTunnelProxy/connectionmanager"
-	"SkipperTunnelProxy/worker"
+	"SkipperProxy/HttpServer"
+	tcpserver "SkipperProxy/TcpServer"
+	"SkipperProxy/config"
+	"SkipperProxy/connectionmanager"
+	"SkipperProxy/worker"
 	"context"
 	"fmt"
 	"html/template"
@@ -14,23 +15,27 @@ import (
 	"syscall"
 	"time"
 )
+// var for enviroment setting
+var Env string
 
 func main() {
-	cm := connectionmanager.NewConnectionManager()
-	tcpserver := tcpserver.NewServer(":9000", cm)
+	fmt.Println("ENV:", Env)
 
-	// prod environemtn
-	// tcpserver := tcpserver.NewServer(":80", cm)
+	config := config.LoadConfig(Env)
+	fmt.Println("ENV:", Env)
+
+	fmt.Println("My base domain is", config.BaseDomain)
+
+	cm := connectionmanager.NewConnectionManager()
+	tcpserver := tcpserver.NewServer(config.TcpPort, cm)
+	// Run http server
+	s := HttpServer.NewServer(config.HttpPort, config.IsHttps, cm, config)
 	templates, err := template.ParseGlob("templates/*.html")
 	if err != nil {
 		log.Fatalf("Error cargando templates: %v", err)
+		return
 	}
-
-	// Run http server
-	s := HttpServer.NewServer(8080, false, cm)
 	s.Templates = templates
-	// ! just for prod enviroment on GCP virtual machine
-	// s:= HttpServer.NewServer(443, true, cm)
 
 	s.Router.Any("/*", s.HandleClientRequest)
 	s.Router.ServeFavicon()
@@ -57,7 +62,7 @@ func main() {
 
 	// worker pool
 	// todo check worker pool size because of low specificacions of ram on the VM
-	for i := 0; i < 15; i++ {
+	for i := 0; i < config.WorkerNumber; i++ {
 		fmt.Println("creating gorotounie", i)
 		go worker.StartWorker(i, wpChannel, cm)
 	}
