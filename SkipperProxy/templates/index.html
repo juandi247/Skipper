@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skipper - Tunnel & Reverse Proxy</title>
+    <link rel="icon" type="image/png" href="https://pub-f0e906fcf8d54ea98e4cbbd15a55e147.r2.dev/skipperlogo.png">
     <style>
         :root {
             --primary-blue: #0066cc;
@@ -34,6 +35,7 @@
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
             overflow-y: auto;
             z-index: 1000;
+            transition: transform 0.3s ease;
         }
 
         .nav-logo {
@@ -88,10 +90,11 @@
 
         .logo-container {
             margin-bottom: 2rem;
+            text-align: center;
         }
 
         .logo {
-            max-width: 200px;
+            max-width: 120px;
             height: auto;
         }
 
@@ -435,14 +438,17 @@
         /* Responsive styles */
         @media screen and (max-width: 768px) {
             .nav-container {
-                position: fixed;
-                left: -250px;
-                transition: left 0.3s ease;
-                width: 250px;
+                transform: translateX(-100%);
             }
 
             .nav-container.active {
-                left: 0;
+                transform: translateX(0);
+            }
+
+            .mobile-menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .main-content {
@@ -450,18 +456,23 @@
                 padding: 1rem;
             }
 
-            .mobile-menu-toggle {
-                display: block;
+            /* Add overlay when menu is open */
+            .nav-overlay {
+                display: none;
                 position: fixed;
-                top: 1rem;
-                right: 1rem;
-                z-index: 1001;
-                background: var(--primary-blue);
-                color: white;
-                border: none;
-                padding: 0.5rem 1rem;
-                border-radius: 4px;
-                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .nav-overlay.active {
+                display: block;
+                opacity: 1;
             }
 
             .contact-links {
@@ -501,10 +512,105 @@
         .mobile-menu-toggle {
             display: none;
         }
+
+        /* Photo Gallery Styles */
+        .photo-gallery {
+            margin: 3rem 0;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .gallery-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-image:hover {
+            transform: scale(1.02);
+        }
+
+        .gallery-caption {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(to right, var(--primary-blue), #0052a3);
+            color: white;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .gallery-caption h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.5rem;
+        }
+
+        .gallery-caption p {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        /* Mobile Slider Styles */
+        @media screen and (max-width: 768px) {
+            .gallery-container {
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none; /* IE and Edge */
+                gap: 0;
+                padding: 0;
+            }
+
+            .gallery-container::-webkit-scrollbar {
+                display: none; /* Chrome, Safari, Opera */
+            }
+
+            .gallery-image {
+                min-width: 100%;
+                scroll-snap-align: start;
+                border-radius: 0;
+                height: 300px;
+            }
+
+            .gallery-caption {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(transparent, rgba(0,0,0,0.8));
+                border-radius: 0;
+            }
+        }
+
+        .dedication {
+            font-style: italic;
+            color: #666;
+            margin: 1rem 0;
+            padding: 1rem;
+            border-left: 4px solid var(--primary-blue);
+            background: rgba(0,102,204,0.05);
+        }
     </style>
 </head>
 <body>
-    <button class="mobile-menu-toggle" onclick="toggleMenu()">Menu</button>
+    <button class="mobile-menu-toggle" onclick="toggleMenu()" aria-label="Toggle navigation menu">
+        <svg viewBox="0 0 24 24">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+        </svg>
+    </button>
+    <div class="nav-overlay" onclick="toggleMenu()"></div>
     <nav class="nav-container">
         <ul class="nav-menu">
             <li><a href="#installation">Installation</a></li>
@@ -518,6 +624,9 @@
     <main class="main-content">
         <div class="container">
             <header>
+                <div class="logo-container">
+                    <img src="https://pub-f0e906fcf8d54ea98e4cbbd15a55e147.r2.dev/skipperlogo.png" alt="Skipper Logo" class="logo">
+                </div>
                 <h1>Skipper</h1>
                 <p class="description">
                     A powerful tunnel and reverse proxy that allows you to expose your localhost projects to the internet through a subdomain. 
@@ -544,7 +653,7 @@
                         </svg>
                         juand.diaza@gmail.com
                     </a>
-                    <a href="https://linkedin.com/in/juandi247" class="contact-link" target="_blank">
+                    <a href="https://www.linkedin.com/in/juan-diego-diaz-92a857238/" class="contact-link" target="_blank">
                         <svg class="contact-icon" viewBox="0 0 24 24">
                             <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
                         </svg>
@@ -557,7 +666,25 @@
                         Give me a Star
                     </a>
                 </div>
+                <p class="dedication">
+                    This project is dedicated to Skipper, my loyal companion during the long hours of programming. 
+                    Your presence keeps me motivated and brings joy to my development journey.
+                </p>
             </header>
+
+            <!-- Photo Gallery Section -->
+            <section class="photo-gallery">
+                <div class="gallery-container">
+                    <img src="https://pub-f0e906fcf8d54ea98e4cbbd15a55e147.r2.dev/skipper2.jpeg" alt="Skipper Photo 1" class="gallery-image">
+                    <img src="https://pub-f0e906fcf8d54ea98e4cbbd15a55e147.r2.dev/skipper1.jpeg" alt="Skipper Photo 2" class="gallery-image">
+                    <img src="https://pub-f0e906fcf8d54ea98e4cbbd15a55e147.r2.dev/skipper3.jpeg" alt="Skipper Photo 3" class="gallery-image">
+                    <img src="https://pub-f0e906fcf8d54ea98e4cbbd15a55e147.r2.dev/skipper4.jpeg" alt="Skipper Photo 4" class="gallery-image">
+                </div>
+                <div class="gallery-caption">
+                    <h3>Meet Skipper</h3>
+                    <p>Skipper: looks cute, contributes nothing to the repo</p>
+                </div>
+            </section>
 
             <section id="installation" class="section">
                 <h2>Installation</h2>
@@ -722,19 +849,35 @@
             });
         });
 
-        // Mobile menu toggle
+        // Mobile menu functionality
         function toggleMenu() {
-            document.querySelector('.nav-container').classList.toggle('active');
+            const nav = document.querySelector('.nav-container');
+            const overlay = document.querySelector('.nav-overlay');
+            const isOpen = nav.classList.contains('active');
+            
+            nav.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Prevent body scroll when menu is open
+            document.body.style.overflow = isOpen ? '' : 'hidden';
         }
 
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(e) {
-            const nav = document.querySelector('.nav-container');
-            const menuToggle = document.querySelector('.mobile-menu-toggle');
-            if (window.innerWidth <= 768 && 
-                !nav.contains(e.target) && 
-                !menuToggle.contains(e.target)) {
-                nav.classList.remove('active');
+        // Close menu when clicking a link
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    toggleMenu();
+                }
+            });
+        });
+
+        // Close menu when pressing escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && window.innerWidth <= 768) {
+                const nav = document.querySelector('.nav-container');
+                if (nav.classList.contains('active')) {
+                    toggleMenu();
+                }
             }
         });
     </script>
