@@ -22,7 +22,9 @@
     <a href="https://github.com/juandi247/skipper" target="_blank" style="background-color:#28a745; color:white; padding: 8px 15px; text-decoration:none; border-radius:5px;">⭐ Give me a Star on GitHub</a>
   </p>
 </div>
-
+ <p>
+   Currently on a re design and rewrite. Im exploring new patterns and visions such as the TigerStyle from the Tiger Beetle DB and improving new features :)
+  </p>
 ---
 
 ## <a name="installation"></a>Go to skipper.lat to see the instalation and more :)
