@@ -1,8 +1,13 @@
 syntax = "proto3";
 package tcp;
 
-option go_package = "gen/";
+option go_package = "/";
 
+
+
+message Control_Tunnel_Error{
+    string Error = 1;
+}
 
 message Request {
     string Method = 1;

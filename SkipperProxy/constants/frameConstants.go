@@ -9,5 +9,4 @@ const (
 	Control_TunnelError
 	RequestType
 	ResponseType
-	ErrorType
 )
