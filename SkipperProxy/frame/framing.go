@@ -2,11 +2,11 @@ package frame
 
 import (
 	"SkipperProxy/constants"
-	FramePayloadpb "SkipperProxy/gen"
 	"encoding/binary"
 	"fmt"
-	"google.golang.org/protobuf/proto"
+	"io"
 	"net"
+	"slices"
 )
 
 const MAX_PAYLOAD_LENGTH = 10000000000
@@ -36,7 +36,7 @@ func CreateFrame(version uint8, frameType uint8, streamId uint64, payloadLen uin
 func (f *TcpFrame) Encode(payloadBuffer Payload) []byte {
 	FinalBuffer := make([]byte, 20+f.PayloadLen)
 
-	copy(FinalBuffer, []byte(f.Magic))  
+	copy(FinalBuffer, constants.SkipperMagicBuffer[:])
 	FinalBuffer[4] = f.Version   
 	FinalBuffer[5] = f.FrameType 
 	//!IMPORTANT here we sart from 8, because the 6,7 position are for padding so they are 0zeroed
@@ -50,54 +50,60 @@ func (f *TcpFrame) Encode(payloadBuffer Payload) []byte {
 	return FinalBuffer
 }
 
-func DecodeHeader(buffer []byte) (*TcpFrame, error) {
+func DecodeHeader(buffer []byte) (uint8, uint64, uint32, error) {
 	if len(buffer) != 20 {
-		return nil, fmt.Errorf("the header didnt conatin 20 bytes, this is not suposed to happen?")
+		return  0, 0,0, fmt.Errorf("the header didnt conatin 20 bytes, this is not suposed to happen?")
 	}
 
-	if string(buffer[0:3]) != constants.SkipperMagic {
-		return nil, fmt.Errorf("the frame message was incomplete, and deosnt have the MAGIC ")
+	// validate magicNumber
+	if !slices.Equal(buffer[0:4],constants.SkipperMagicBuffer[:]) {
+		return 0,0,0,fmt.Errorf("the frame message was incomplete, and deosnt have the MAGIC ")
 	}
 
-	f := TcpFrame{}
-	f.Magic = string(buffer[0:4])
-	f.Version = uint8(buffer[4])
-	f.FrameType = uint8(buffer[5])
-	f.Reserved = [2]byte(buffer[6:8])
-	f.StreamId = binary.BigEndian.Uint64(buffer[8:16])
-	f.PayloadLen = binary.BigEndian.Uint32(buffer[16:20])
+	// validate the typ
+	err:= constants.ValidateFramingType(buffer[5])
+	if err != nil {
+		return 0,0,0, fmt.Errorf("didnt receive right after the connection the REquest Type good")
+	}
 
-	return &f, nil
+
+	FrameType := uint8(buffer[5])
+	StreamId := binary.BigEndian.Uint64(buffer[8:16])
+	PayloadLen := binary.BigEndian.Uint32(buffer[16:20])
+
+	return FrameType, StreamId, PayloadLen, nil
 }
 
-func SendAcknowledgeConnection(conn net.Conn) error {
-	frame := CreateFrame(1, constants.Control_TunnelAck, 0, 0)
-	// there is No payload we just send the type Acknowledge to verify the succesfull connection
-	buffer := frame.Encode(nil)
-	_, err := conn.Write(buffer)
-	if err != nil {
-		return fmt.Errorf("the message could not be writeen to the connection %d", err)
-	}
-	return nil
-}
 
-func SendControlConnectionError(conn net.Conn, controlError string) error {
-	payload := &FramePayloadpb.Control_Tunnel_Error{
-		Error: controlError,
-	}
-	payloadBytes, err := proto.Marshal(payload)
+/*
+1.Read the 20 bytes from the buffer (a valid frame)
+2.Decode the frame and return the important values (in this decode we validate the magic number, validate framing type etc)
+3.create a payloadbuffer if the payload has anything and return it, if not return the payload null
+*/
+func ReadCompleteFrame(conn net.Conn, isControlType bool) (uint8, uint64, uint32, Payload, error) {
+
+	buffer := make([]byte, 20)
+	_, err := io.ReadFull(conn, buffer)
 
 	if err != nil {
-		fmt.Println("error!! ", err)
-		panic("ERROR marshaling the payload")
+		return 0, 0, 0, nil, fmt.Errorf("ERROR Reading the buffer")
 	}
+	frameType, streamId, Payloadlength, err := DecodeHeader(buffer)
 
-	frame := CreateFrame(1, constants.Control_TunnelError, 0, uint32(len(payloadBytes)))
-	buffer := frame.Encode(payloadBytes)
-	_, err = conn.Write(buffer)
 	if err != nil {
-		return fmt.Errorf("the message could not be writeen to the connection %v", err)
-	}
-	return nil
+		return 0, 0, 0, nil, fmt.Errorf("could not parse the header", err)
 
+	}
+
+	// we create the complete buffer if the payload has content (length is more than cero and we return the payload here too)
+	if Payloadlength > 0 {
+		payloadBuffer := make([]byte, Payloadlength)
+		_, err = io.ReadFull(conn, payloadBuffer)
+		if err != nil {
+			return 0, 0, 0, nil, fmt.Errorf("ERROR, the payload length was sent incomplete")
+		}
+		return frameType, streamId, Payloadlength, payloadBuffer, nil
+	}
+
+	return frameType, streamId, Payloadlength, nil, nil
 }

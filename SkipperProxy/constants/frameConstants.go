@@ -3,6 +3,7 @@ package constants
 import "fmt"
 
 const SkipperMagic = "SKPR"
+var SkipperMagicBuffer=[4]byte{SkipperMagic[0], SkipperMagic[1], SkipperMagic[2],SkipperMagic[3]}
 
 // Framing Types
 const (
