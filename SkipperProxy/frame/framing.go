@@ -36,21 +36,41 @@ func CreateFrame(version uint8, frameType uint8, streamId uint64, payloadLen uin
 func (f *TcpFrame) Encode(payloadBuffer Payload) []byte {
 	FinalBuffer := make([]byte, 20+f.PayloadLen)
 
-	copy(FinalBuffer, []byte(f.Magic))
-	FinalBuffer[5] = f.Version
-	FinalBuffer[6] = f.FrameType
-	binary.BigEndian.PutUint16(FinalBuffer, 0)
-	binary.BigEndian.PutUint64(FinalBuffer[8:16], f.StreamId)
-	binary.BigEndian.PutUint32(FinalBuffer[16:20], f.PayloadLen)
+	copy(FinalBuffer, []byte(f.Magic))  
+	FinalBuffer[4] = f.Version   
+	FinalBuffer[5] = f.FrameType 
+	//!IMPORTANT here we sart from 8, because the 6,7 position are for padding so they are 0zeroed
+	binary.BigEndian.PutUint64(FinalBuffer[8:16], f.StreamId) 
+	binary.BigEndian.PutUint32(FinalBuffer[16:20], f.PayloadLen) 
 
 	if f.PayloadLen > 0 {
-		copy(FinalBuffer, payloadBuffer)
+		copy(FinalBuffer[20:], payloadBuffer)
 		return FinalBuffer
 	}
 	return FinalBuffer
 }
 
-func SendControlOk(conn net.Conn) error {
+func DecodeHeader(buffer []byte) (*TcpFrame, error) {
+	if len(buffer) != 20 {
+		return nil, fmt.Errorf("the header didnt conatin 20 bytes, this is not suposed to happen?")
+	}
+
+	if string(buffer[0:3]) != constants.SkipperMagic {
+		return nil, fmt.Errorf("the frame message was incomplete, and deosnt have the MAGIC ")
+	}
+
+	f := TcpFrame{}
+	f.Magic = string(buffer[0:4])
+	f.Version = uint8(buffer[4])
+	f.FrameType = uint8(buffer[5])
+	f.Reserved = [2]byte(buffer[6:8])
+	f.StreamId = binary.BigEndian.Uint64(buffer[8:16])
+	f.PayloadLen = binary.BigEndian.Uint32(buffer[16:20])
+
+	return &f, nil
+}
+
+func SendAcknowledgeConnection(conn net.Conn) error {
 	frame := CreateFrame(1, constants.Control_TunnelAck, 0, 0)
 	// there is No payload we just send the type Acknowledge to verify the succesfull connection
 	buffer := frame.Encode(nil)
