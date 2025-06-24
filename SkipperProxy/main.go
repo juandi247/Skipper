@@ -12,10 +12,7 @@ project is focused for learning Golang mainly and experimenting with new low lev
 Juan Diego Diaz
 */
 func main() {
-	cm := tunnel.CreateConnectionManager()
-	tcpServer:= tcp.CreateTcpServer(":9000", cm)
+	tm := tunnel.CreateTunnelManager()
+	tcpServer:= tcp.CreateTcpServer(":9000", tm)
 	tcpServer.StartServer()
-
-	
-	
 }
