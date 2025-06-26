@@ -1,0 +1,3 @@
+This is the implemnetation of my own quic protocol from scratch.
+I noticed with my Proxy that all the traffic goes to a single tcp connection with multiplexing (really good),
+the only hting is that it gets into the head-of-line blocking, if any packet is loss or is really slow.
