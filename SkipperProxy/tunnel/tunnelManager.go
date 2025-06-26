@@ -35,7 +35,6 @@ func (tm *TunnelManager) RegisterTunnel(subdomain string, conn net.Conn, ip net.
 	tm.TunnelConnectionsMap[subdomain] = tunnelConnection
 	tm.Mutex.Unlock()
 
-
 	err := tunnelConnection.SendAcknowledgeConnection()
 	if err != nil {
 		return nil, fmt.Errorf("error creating tunnelConnection", tunnelConnection)

@@ -21,7 +21,7 @@ type TunnelConnection struct {
 	// pdenign things, (idk yet)
 }
 
-func CreateTunnelConnection(subdomain string, conn net.Conn, ip net.Addr) (*TunnelConnection) {
+func CreateTunnelConnection(subdomain string, conn net.Conn, ip net.Addr) *TunnelConnection {
 	return &TunnelConnection{
 		Subdomain:  subdomain,
 		Connection: conn,
@@ -48,7 +48,7 @@ func (tc *TunnelConnection) StartReadLoop() {
 	}
 }
 
-func (tc *TunnelConnection)SendAcknowledgeConnection() error {
+func (tc *TunnelConnection) SendAcknowledgeConnection() error {
 	frame := frame.CreateFrame(1, constants.Control_TunnelAck, 0, 0)
 	// there is No payload we just send the type Acknowledge to verify the succesfull connection
 	buffer := frame.Encode(nil)
