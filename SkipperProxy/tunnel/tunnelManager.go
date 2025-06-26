@@ -8,13 +8,13 @@ import (
 
 type TunnelManager struct {
 	TunnelConnectionsMap map[string]*TunnelConnection
-	Mutex                sync.Mutex
+	Mutex                sync.RWMutex
 }
 
 func CreateTunnelManager() *TunnelManager {
 	return &TunnelManager{
 		TunnelConnectionsMap: make(map[string]*TunnelConnection, 100),
-		Mutex:                sync.Mutex{},
+		Mutex:                sync.RWMutex{},
 	}
 }
 
