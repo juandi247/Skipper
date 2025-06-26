@@ -1,8 +1,11 @@
 package main
 
 import (
+	"SkipperProxy/http"
 	"SkipperProxy/tcp"
 	"SkipperProxy/tunnel"
+	"fmt"
+	"sync"
 )
 
 /*
@@ -12,7 +15,15 @@ project is focused for learning Golang mainly and experimenting with new low lev
 Juan Diego Diaz
 */
 func main() {
+	wg := sync.WaitGroup{}
+	httpServer := http.CreateHttpServer()
+	wg.Add(1)
+	go httpServer.StartServer()
 	tm := tunnel.CreateTunnelManager()
-	tcpServer:= tcp.CreateTcpServer(":9000", tm)
-	tcpServer.StartServer()
+	tcpServer := tcp.CreateTcpServer(":9000", tm)
+	wg.Add(1)
+	go tcpServer.StartServer()
+	fmt.Println("tcp server started")
+	wg.Wait()
+
 }

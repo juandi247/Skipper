@@ -8,6 +8,10 @@ import (
 	"net"
 )
 
+type Server interface {
+	StartServer() error
+}
+
 type TcpServer struct {
 	port     string
 	listener net.Listener
@@ -44,8 +48,10 @@ func (s *TcpServer) AcceptLoop() {
 }
 
 func (s *TcpServer) handleNewConnection(conn net.Conn) {
-	defer conn.Close()
-	fmt.Println("new connectoin accepted, before handshake", conn)
+	defer func() {
+		fmt.Println("vamos a cerrar la conexion", conn)
+		conn.Close()
+	}()
 	frameType, _, _, payload, err := frame.ReadCompleteFrame(conn, true)
 	if err != nil {
 		fmt.Println(err)
@@ -65,4 +71,3 @@ func (s *TcpServer) handleNewConnection(conn net.Conn) {
 
 	tunnelConnection.StartReadLoop()
 }
-
