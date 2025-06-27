@@ -16,7 +16,7 @@ Juan Diego Diaz
 */
 func main() {
 	wg := sync.WaitGroup{}
-	httpServer := http.CreateHttpServer()
+	httpServer := http.CreateHttpServer(":8080")
 	wg.Add(1)
 	go httpServer.StartServer()
 	tm := tunnel.CreateTunnelManager()

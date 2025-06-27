@@ -12,14 +12,14 @@ type httpServer struct {
 
 }
 
-func CreateHttpServer() *httpServer {
+func CreateHttpServer(port string) *httpServer {
 	httpMultiplexer := http.NewServeMux()
 	// we register it as wildcard
 	httpMultiplexer.HandleFunc("/", handleRequest)
 	fmt.Println("creamos server")
 	return &httpServer{
 		muxer: httpMultiplexer,
-		port:  ":8090",
+		port:  port,
 	}
 }
 
@@ -35,6 +35,7 @@ func (s *httpServer) StartServer() error {
 }
 
 func handleRequest(w http.ResponseWriter, r *http.Request) {
+	ParseSubdomain(r.Host)
 	fmt.Printf("the path of the request was %v \n", r.RequestURI)
 	hello := "hello world"
 	w.Write([]byte(hello))
