@@ -6,7 +6,6 @@ import (
 )
 
 func ParseSubdomain(host string) (string, bool) {
-
 	if host == constants.SkipperUrl || host == constants.WWWSkipperUrl {
 		return "", false
 	}
