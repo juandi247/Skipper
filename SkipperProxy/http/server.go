@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"google.golang.org/protobuf/proto"
 )
 
 type httpServer struct {
@@ -49,11 +50,10 @@ func ClosureFunc(tm *tunnel.TunnelManager) http.HandlerFunc {
 
 		fmt.Println(subdomain)
 
-		//! context timeout of 10/15 seconds, if there is a timtou show 404
+		//todo: context timeout of 10/15 seconds, if there is a timtou show 404
 
-		// search for the subdomain
-		// verify that it exists
-		// if it doesnt exist on the map, show the 404 page
+// todo: this should be on the getTunnelFunc frim the tunnel manager
+// the mutex should not be touched by this handler func
 		tm.Mutex.Lock()
 		value, exists := tm.TunnelConnectionsMap[subdomain]
 		tm.Mutex.Unlock()
@@ -62,12 +62,14 @@ func ClosureFunc(tm *tunnel.TunnelManager) http.HandlerFunc {
 		}
 
 	
-		// if it exists we take the request, encode it,
 		fmt.Println(value)
-		// we cn seralize the payload via proto.marshal
-		// then encode all with the skipper signature and payloadlength, and the streamID
-		// we need to know how to manage the stream id
 
+// headers parsing for seralization
+		headersMap:=make(map[string]*FramePayloadpb.HeaderValues)
+
+		for key, value:=range  r.Header{
+			headersMap[key]= &FramePayloadpb.HeaderValues{HeaderValues: value}
+		}
 
 		requestBody,err:=io.ReadAll(r.Body)
 
@@ -75,33 +77,38 @@ func ClosureFunc(tm *tunnel.TunnelManager) http.HandlerFunc {
 			w.Write([]byte("error reading the body"))
 			return
 		}
+		defer r.Body.Close()
 
-		// http.Header
-		// finalRequest:= FramePayloadpb.Request{
-		// 	Method:r.Method ,
-		// 	Proto: r.Proto,
-		// 	TargetUri: subdomain,
-		// 	Path: r.RequestURI, //todo: check esta
-		// 	Headers: r.Header,
-		// 	Body: requestBody,
-		// 	RequestId: 1232323,
-		// }
+		finalRequest:= &FramePayloadpb.Request{
+			Method:r.Method ,
+			Proto: r.Proto,
+			TargetUri: subdomain,
+			Path: r.RequestURI, 
+			Headers: headersMap,
+			Body: requestBody,
+			RequestId: 1232323,
+		}
 
 
-		// requestFrame:= frame.CreateFrame(
-		// 	1,  //version
-		// 	constants.ProxyRequestType,  //requestype
-		// 	122112, //streamID
-		// 	uint32(len(requestBody))) //PayloadLength)
+		requestFrame:= frame.CreateFrame(
+			1,  //version
+			constants.ProxyRequestType,  //requestype
+			122112, //streamID
+			uint32(len(requestBody))) //PayloadLength)
  
 
-		// requestFrame.Encode(requestBody)
+
+		finalPayload, err:= proto.Marshal(finalRequest)
+		if err!=nil{
+			return
+		}
+		requestFrame.Encode(finalPayload)
 
 
 
-		
+
 		// when we send the request, we should create a channel, that will receive it and will have the streamID
-
+// !aplly the reactor pattern
 		// thats a blocking action
 
 		// select that waits the channel or the contextdeadline
