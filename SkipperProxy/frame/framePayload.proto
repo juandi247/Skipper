@@ -29,7 +29,7 @@ message Response {
     int32 ProtoMajor = 3;
     int32 ProtoMinor = 4;
     string Proto = 5;
-    map<string, string> Headers = 6;
+    map<string, HeaderValues> Headers = 6;
     string Body = 7;
     int64 RequestId = 8;
 }
