@@ -3,11 +3,8 @@ package http
 import (
 	"SkipperProxy/constants"
 	"SkipperProxy/frame"
-	FramePayloadpb "SkipperProxy/gen"
 	"SkipperProxy/tunnel"
 	"fmt"
-	"google.golang.org/protobuf/proto"
-	"io"
 	"net/http"
 )
 
@@ -48,72 +45,52 @@ func ClosureFunc(tm *tunnel.TunnelManager) http.HandlerFunc {
 			w.Write([]byte("we are gonna show skipper.lat page"))
 		}
 
-		fmt.Println(subdomain)
-
-		//todo: context timeout of 10/15 seconds, if there is a timtou show 404
-
-		// todo: this should be on the getTunnelFunc frim the tunnel manager
-		// the mutex should not be touched by this handler func
-		tm.Mutex.Lock()
-		value, exists := tm.TunnelConnectionsMap[subdomain]
-		tm.Mutex.Unlock()
-		if !exists {
-			w.Write([]byte("404 not found subdomain on the tunnel"))
-		}
-
-		fmt.Println(value)
-
-		// headers parsing for seralization
-		headersMap := make(map[string]*FramePayloadpb.HeaderValues)
-
-		for key, value := range r.Header {
-			headersMap[key] = &FramePayloadpb.HeaderValues{HeaderValues: value}
-		}
-
-		requestBody, err := io.ReadAll(r.Body)
+		tunnel, err := tm.GetTunnel(subdomain)
 
 		if err != nil {
-			w.Write([]byte("error reading the body"))
+			fmt.Println("the subdomain doenst exist")
+			w.Write([]byte("doesnt exists subdomain!"))
 			return
 		}
-		defer r.Body.Close()
 
-		finalRequest := &FramePayloadpb.Request{
-			Method:    r.Method,
-			Proto:     r.Proto,
-			TargetUri: subdomain,
-			Path:      r.RequestURI,
-			Headers:   headersMap,
-			Body:      requestBody,
-			RequestId: 1232323,
+		finalPayload, payloadLength, err := SerializeHttpRequest(subdomain, r)
+
+		if err != nil {
+			fmt.Println("error when serialezing the request", err)
+			w.Write([]byte("error seralizatin the request"))
+			return
 		}
+
+		nextStreamId := ObtainStreamId(tunnel)
 
 		requestFrame := frame.CreateFrame(
 			1,                          //version
 			constants.ProxyRequestType, //requestype
-			122112,                     //streamID
-			uint32(len(requestBody)))   //PayloadLength)
+			nextStreamId,               //streamID
+			payloadLength)
 
-		finalPayload, err := proto.Marshal(finalRequest)
-		if err != nil {
-			return
-		}
 		requestFrame.Encode(finalPayload)
 
-		// when we send the request, we should create a channel, that will receive it and will have the streamID
-		// !aplly the reactor pattern
-		// thats a blocking action
+		// buffered channel that waits for the response
+		responseChannel := make(chan *frame.InternalFrame, 1)
+		SaveResponseChannel(tunnel,nextStreamId,responseChannel)
+		
+		select {
+		case <-responseChannel:
+			fmt.Println("cosoo")
+			w.Write([]byte("AAAAA RECBIIMOS LE CHHANELL EL EMSNAJE"))
 
-		// select that waits the channel or the contextdeadline
-
+		default:
+			fmt.Println("ERRO ACA")
+		}
 		// make a reader of headers, check if its a cached thing
 		// check if its json, xml, the format
 		// depending on that make a switch that evaluates that and makes a w.Write to the user
 
 		// the handler is over
 
-		fmt.Printf("the path of the request was %v \n", r.RequestURI)
-		hello := "hello world"
-		w.Write([]byte(hello))
+		//! Delete the value from the map where the channel and the stream id was
+		// ! if not would be a memory leak
+
 	}
 }

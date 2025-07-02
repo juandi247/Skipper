@@ -66,14 +66,14 @@ func (x *Control_Tunnel_Error) GetError() string {
 }
 
 type Request struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Method        string                 `protobuf:"bytes,1,opt,name=Method,proto3" json:"Method,omitempty"`
-	Proto         string                 `protobuf:"bytes,2,opt,name=Proto,proto3" json:"Proto,omitempty"`
-	TargetUri     string                 `protobuf:"bytes,3,opt,name=TargetUri,proto3" json:"TargetUri,omitempty"`
-	Path          string                 `protobuf:"bytes,4,opt,name=Path,proto3" json:"Path,omitempty"`
-	Headers       map[string]string      `protobuf:"bytes,5,rep,name=Headers,proto3" json:"Headers,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Body          string                 `protobuf:"bytes,6,opt,name=Body,proto3" json:"Body,omitempty"`
-	RequestId     string                 `protobuf:"bytes,7,opt,name=RequestId,proto3" json:"RequestId,omitempty"`
+	state         protoimpl.MessageState   `protogen:"open.v1"`
+	Method        string                   `protobuf:"bytes,1,opt,name=Method,proto3" json:"Method,omitempty"`
+	Proto         string                   `protobuf:"bytes,2,opt,name=Proto,proto3" json:"Proto,omitempty"`
+	TargetUri     string                   `protobuf:"bytes,3,opt,name=TargetUri,proto3" json:"TargetUri,omitempty"`
+	Path          string                   `protobuf:"bytes,4,opt,name=Path,proto3" json:"Path,omitempty"`
+	Headers       map[string]*HeaderValues `protobuf:"bytes,5,rep,name=Headers,proto3" json:"Headers,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Body          []byte                   `protobuf:"bytes,6,opt,name=Body,proto3" json:"Body,omitempty"`
+	RequestId     int64                    `protobuf:"varint,7,opt,name=RequestId,proto3" json:"RequestId,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -136,25 +136,69 @@ func (x *Request) GetPath() string {
 	return ""
 }
 
-func (x *Request) GetHeaders() map[string]string {
+func (x *Request) GetHeaders() map[string]*HeaderValues {
 	if x != nil {
 		return x.Headers
 	}
 	return nil
 }
 
-func (x *Request) GetBody() string {
+func (x *Request) GetBody() []byte {
 	if x != nil {
 		return x.Body
 	}
-	return ""
+	return nil
 }
 
-func (x *Request) GetRequestId() string {
+func (x *Request) GetRequestId() int64 {
 	if x != nil {
 		return x.RequestId
 	}
-	return ""
+	return 0
+}
+
+type HeaderValues struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	HeaderValues  []string               `protobuf:"bytes,1,rep,name=HeaderValues,proto3" json:"HeaderValues,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HeaderValues) Reset() {
+	*x = HeaderValues{}
+	mi := &file_framePayload_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HeaderValues) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HeaderValues) ProtoMessage() {}
+
+func (x *HeaderValues) ProtoReflect() protoreflect.Message {
+	mi := &file_framePayload_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HeaderValues.ProtoReflect.Descriptor instead.
+func (*HeaderValues) Descriptor() ([]byte, []int) {
+	return file_framePayload_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *HeaderValues) GetHeaderValues() []string {
+	if x != nil {
+		return x.HeaderValues
+	}
+	return nil
 }
 
 type Response struct {
@@ -166,14 +210,14 @@ type Response struct {
 	Proto         string                 `protobuf:"bytes,5,opt,name=Proto,proto3" json:"Proto,omitempty"`
 	Headers       map[string]string      `protobuf:"bytes,6,rep,name=Headers,proto3" json:"Headers,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	Body          string                 `protobuf:"bytes,7,opt,name=Body,proto3" json:"Body,omitempty"`
-	RequestId     string                 `protobuf:"bytes,8,opt,name=RequestId,proto3" json:"RequestId,omitempty"`
+	RequestId     int64                  `protobuf:"varint,8,opt,name=RequestId,proto3" json:"RequestId,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Response) Reset() {
 	*x = Response{}
-	mi := &file_framePayload_proto_msgTypes[2]
+	mi := &file_framePayload_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -185,7 +229,7 @@ func (x *Response) String() string {
 func (*Response) ProtoMessage() {}
 
 func (x *Response) ProtoReflect() protoreflect.Message {
-	mi := &file_framePayload_proto_msgTypes[2]
+	mi := &file_framePayload_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -198,7 +242,7 @@ func (x *Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Response.ProtoReflect.Descriptor instead.
 func (*Response) Descriptor() ([]byte, []int) {
-	return file_framePayload_proto_rawDescGZIP(), []int{2}
+	return file_framePayload_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Response) GetStatus() string {
@@ -250,11 +294,11 @@ func (x *Response) GetBody() string {
 	return ""
 }
 
-func (x *Response) GetRequestId() string {
+func (x *Response) GetRequestId() int64 {
 	if x != nil {
 		return x.RequestId
 	}
-	return ""
+	return 0
 }
 
 var File_framePayload_proto protoreflect.FileDescriptor
@@ -263,18 +307,20 @@ const file_framePayload_proto_rawDesc = "" +
 	"\n" +
 	"\x12framePayload.proto\x12\x03tcp\",\n" +
 	"\x14Control_Tunnel_Error\x12\x14\n" +
-	"\x05Error\x18\x01 \x01(\tR\x05Error\"\x8c\x02\n" +
+	"\x05Error\x18\x01 \x01(\tR\x05Error\"\x9f\x02\n" +
 	"\aRequest\x12\x16\n" +
 	"\x06Method\x18\x01 \x01(\tR\x06Method\x12\x14\n" +
 	"\x05Proto\x18\x02 \x01(\tR\x05Proto\x12\x1c\n" +
 	"\tTargetUri\x18\x03 \x01(\tR\tTargetUri\x12\x12\n" +
 	"\x04Path\x18\x04 \x01(\tR\x04Path\x123\n" +
 	"\aHeaders\x18\x05 \x03(\v2\x19.tcp.Request.HeadersEntryR\aHeaders\x12\x12\n" +
-	"\x04Body\x18\x06 \x01(\tR\x04Body\x12\x1c\n" +
-	"\tRequestId\x18\a \x01(\tR\tRequestId\x1a:\n" +
+	"\x04Body\x18\x06 \x01(\fR\x04Body\x12\x1c\n" +
+	"\tRequestId\x18\a \x01(\x03R\tRequestId\x1aM\n" +
 	"\fHeadersEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xbc\x02\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12'\n" +
+	"\x05value\x18\x02 \x01(\v2\x11.tcp.HeaderValuesR\x05value:\x028\x01\"2\n" +
+	"\fHeaderValues\x12\"\n" +
+	"\fHeaderValues\x18\x01 \x03(\tR\fHeaderValues\"\xbc\x02\n" +
 	"\bResponse\x12\x16\n" +
 	"\x06Status\x18\x01 \x01(\tR\x06Status\x12\x1e\n" +
 	"\n" +
@@ -289,7 +335,7 @@ const file_framePayload_proto_rawDesc = "" +
 	"\x05Proto\x18\x05 \x01(\tR\x05Proto\x124\n" +
 	"\aHeaders\x18\x06 \x03(\v2\x1a.tcp.Response.HeadersEntryR\aHeaders\x12\x12\n" +
 	"\x04Body\x18\a \x01(\tR\x04Body\x12\x1c\n" +
-	"\tRequestId\x18\b \x01(\tR\tRequestId\x1a:\n" +
+	"\tRequestId\x18\b \x01(\x03R\tRequestId\x1a:\n" +
 	"\fHeadersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\x03Z\x01/b\x06proto3"
@@ -306,22 +352,24 @@ func file_framePayload_proto_rawDescGZIP() []byte {
 	return file_framePayload_proto_rawDescData
 }
 
-var file_framePayload_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_framePayload_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_framePayload_proto_goTypes = []any{
 	(*Control_Tunnel_Error)(nil), // 0: tcp.Control_Tunnel_Error
 	(*Request)(nil),              // 1: tcp.Request
-	(*Response)(nil),             // 2: tcp.Response
-	nil,                          // 3: tcp.Request.HeadersEntry
-	nil,                          // 4: tcp.Response.HeadersEntry
+	(*HeaderValues)(nil),         // 2: tcp.HeaderValues
+	(*Response)(nil),             // 3: tcp.Response
+	nil,                          // 4: tcp.Request.HeadersEntry
+	nil,                          // 5: tcp.Response.HeadersEntry
 }
 var file_framePayload_proto_depIdxs = []int32{
-	3, // 0: tcp.Request.Headers:type_name -> tcp.Request.HeadersEntry
-	4, // 1: tcp.Response.Headers:type_name -> tcp.Response.HeadersEntry
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	4, // 0: tcp.Request.Headers:type_name -> tcp.Request.HeadersEntry
+	5, // 1: tcp.Response.Headers:type_name -> tcp.Response.HeadersEntry
+	2, // 2: tcp.Request.HeadersEntry.value:type_name -> tcp.HeaderValues
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_framePayload_proto_init() }
@@ -335,7 +383,7 @@ func file_framePayload_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_framePayload_proto_rawDesc), len(file_framePayload_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

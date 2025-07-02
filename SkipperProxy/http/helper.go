@@ -2,6 +2,8 @@ package http
 
 import (
 	"SkipperProxy/constants"
+	"SkipperProxy/frame"
+	"SkipperProxy/tunnel"
 	"strings"
 )
 
@@ -26,4 +28,17 @@ func ParseSubdomain(host string) (string, bool) {
 		return "", false
 	}
 	return subdomain, true
+}
+
+func ObtainStreamId(tc *tunnel.TunnelConnection) uint64 {
+	tc.StreamMutex.Lock()
+	defer tc.StreamMutex.Unlock()
+	tc.StreamId++
+	return tc.StreamId
+}
+
+func SaveResponseChannel(tc *tunnel.TunnelConnection, streamId uint64, ch chan *frame.InternalFrame) {
+	tc.MapMutex.Lock()
+	defer tc.MapMutex.Unlock()
+	tc.StreamMap[streamId] = ch
 }
