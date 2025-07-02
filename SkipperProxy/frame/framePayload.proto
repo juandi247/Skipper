@@ -1,0 +1,35 @@
+syntax = "proto3";
+package tcp;
+
+option go_package = "/";
+
+
+
+message Control_Tunnel_Error{
+    string Error = 1;
+}
+
+message Request {
+    string Method = 1;
+    string Proto = 2;
+    string TargetUri = 3;
+    string Path = 4;
+    map<string, HeaderValues> Headers = 5;
+    bytes Body = 6;
+    int64 RequestId = 7;
+}
+
+message HeaderValues{
+   repeated string HeaderValues =1;
+}
+
+message Response {
+    string Status = 1;
+    int32 StatusCode = 2;
+    int32 ProtoMajor = 3;
+    int32 ProtoMinor = 4;
+    string Proto = 5;
+    map<string, HeaderValues> Headers = 6;
+    string Body = 7;
+    int64 RequestId = 8;
+}

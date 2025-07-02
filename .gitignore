@@ -1,3 +1,4 @@
 *.exe
 .env
 dist
+SkipperProxy/gen/framePayload.pb.go

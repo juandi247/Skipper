@@ -1,97 +1,29 @@
 package main
 
 import (
-	"SkipperProxy/HttpServer"
-	tcpserver "SkipperProxy/TcpServer"
-	"SkipperProxy/config"
-	"SkipperProxy/connectionmanager"
-	"SkipperProxy/worker"
-	"context"
+	"SkipperProxy/http"
+	"SkipperProxy/tcp"
+	"SkipperProxy/tunnel"
 	"fmt"
-	"html/template"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
+	"sync"
 )
-// var for enviroment setting
-var Env string
 
+/*
+this is the new skipper rewrite implementation, using new features and implementing
+TigerStyle inspiration for the project. Im not expert or anything in go and programming but this
+project is focused for learning Golang mainly and experimenting with new low level concepts :)
+Juan Diego Diaz
+*/
 func main() {
-	fmt.Println("ENV:", Env)
+	wg := sync.WaitGroup{}
+	httpServer := http.CreateHttpServer(":8080")
+	wg.Add(1)
+	go httpServer.StartServer()
+	tm := tunnel.CreateTunnelManager()
+	tcpServer := tcp.CreateTcpServer(":9000", tm)
+	wg.Add(1)
+	go tcpServer.StartServer()
+	fmt.Println("tcp server started")
+	wg.Wait()
 
-	config := config.LoadConfig(Env)
-	fmt.Println("ENV:", Env)
-
-	fmt.Println("My base domain is", config.BaseDomain)
-
-	cm := connectionmanager.NewConnectionManager()
-	tcpserver := tcpserver.NewServer(config.TcpPort, cm)
-	// Run http server
-	s := HttpServer.NewServer(config.HttpPort, config.IsHttps, cm, config)
-	templates, err := template.ParseGlob("templates/*.html")
-	if err != nil {
-		log.Fatalf("Error cargando templates: %v", err)
-		return
-	}
-	s.Templates = templates
-
-	s.Router.Any("/*", s.HandleClientRequest)
-	s.Router.ServeFavicon()
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
-
-	// ! Goroutine for running the server
-	go func() {
-		if err := s.Run(); err != nil {
-			log.Fatalf("Error starting server: %v", err)
-		}
-	}()
-
-	fmt.Println("Server is running on http://localhost:8080")
-
-	// ! Run TCP server
-
-	wpChannel := make(chan []byte, 50)
-	go func() {
-		for msg := range tcpserver.MessageChanel {
-			wpChannel <- msg
-		}
-	}()
-
-	// worker pool
-	// todo check worker pool size because of low specificacions of ram on the VM
-	for i := 0; i < config.WorkerNumber; i++ {
-		fmt.Println("creating gorotounie", i)
-		go worker.StartWorker(i, wpChannel, cm)
-	}
-
-	go tcpserver.Start()
-
-	// go func() {
-	// 	for msg := range tcpserver.RequestChannel {
-	// 		tcpserver.ConnMutext.Lock()
-	// 		for _, conn := range tcpserver.ConnectionMap {
-	// 			// Solo uno en el map, le escribimos y salimos
-	// 			_, err := conn.Write(msg.Data)
-	// 			fmt.Println("ya se fue")
-	// 			if err != nil {
-	// 				fmt.Printf("Error escribiendo a conexión TCP: %v\n", err)
-	// 			}
-	// 			break
-	// 		}
-	// 		tcpserver.ConnMutext.Unlock()
-	// 	}
-	// }()
-
-	// STOPPPP the http when getting the STOP
-	//Interrupt signal
-	<-stop
-	fmt.Println("Shutting down server...")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := s.Shutdown(ctx); err != nil {
-		log.Fatalf("Server forced to shutdown: %v", err)
-	}
 }
