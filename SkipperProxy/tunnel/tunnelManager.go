@@ -48,3 +48,13 @@ func (tm *TunnelManager) RemoveTunnel(tunnel *TunnelConnection) {
 	defer tunnel.Connection.Close()
 	delete(tm.TunnelConnectionsMap, tunnel.Subdomain)
 }
+
+func (tm *TunnelManager) GetTunnel(subdomain string) (*TunnelConnection, error) {
+	tm.Mutex.Lock()
+	tunnel, exists := tm.TunnelConnectionsMap[subdomain]
+	tm.Mutex.Unlock()
+	if !exists {
+		return nil, fmt.Errorf("The subdomain doens exists on the tunnel connections map")
+	}
+	return tunnel, nil
+}
