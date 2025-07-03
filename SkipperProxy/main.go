@@ -15,11 +15,11 @@ project is focused for learning Golang mainly and experimenting with new low lev
 Juan Diego Diaz
 */
 func main() {
+	tm := tunnel.CreateSkipperManager()
 	wg := sync.WaitGroup{}
-	httpServer := http.CreateHttpServer(":8080")
+	httpServer := http.CreateHttpServer(":8080", tm)
 	wg.Add(1)
 	go httpServer.StartServer()
-	tm := tunnel.CreateTunnelManager()
 	tcpServer := tcp.CreateTcpServer(":9000", tm)
 	wg.Add(1)
 	go tcpServer.StartServer()

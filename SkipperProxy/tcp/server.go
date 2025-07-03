@@ -15,10 +15,10 @@ type Server interface {
 type TcpServer struct {
 	port     string
 	listener net.Listener
-	tm       *tunnel.TunnelManager
+	tm       tunnel.TunnelManager
 }
 
-func CreateTcpServer(port string, tm *tunnel.TunnelManager) *TcpServer {
+func CreateTcpServer(port string, tm tunnel.TunnelManager) *TcpServer {
 	return &TcpServer{
 		port: port,
 		tm:   tm,

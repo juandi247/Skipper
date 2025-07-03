@@ -6,19 +6,26 @@ import (
 	"sync"
 )
 
-type TunnelManager struct {
+
+type TunnelManager interface {
+    RegisterTunnel(subdomain string, conn net.Conn, ip net.Addr) (*TunnelConnection, error)
+    RemoveTunnel(tunnel *TunnelConnection)
+    GetTunnel(subdomain string) (*TunnelConnection, error)
+}
+
+type SkipperManager struct {
 	TunnelConnectionsMap map[string]*TunnelConnection
 	Mutex                sync.RWMutex
 }
 
-func CreateTunnelManager() *TunnelManager {
-	return &TunnelManager{
+func CreateSkipperManager() *SkipperManager {
+	return &SkipperManager{
 		TunnelConnectionsMap: make(map[string]*TunnelConnection, 100),
 		Mutex:                sync.RWMutex{},
 	}
 }
 
-func (tm *TunnelManager) RegisterTunnel(subdomain string, conn net.Conn, ip net.Addr) (*TunnelConnection, error) {
+func (tm *SkipperManager) RegisterTunnel(subdomain string, conn net.Conn, ip net.Addr) (*TunnelConnection, error) {
 	if len(subdomain) == 0 {
 		return nil, fmt.Errorf("subdomain cannot be empty")
 	}
@@ -42,14 +49,14 @@ func (tm *TunnelManager) RegisterTunnel(subdomain string, conn net.Conn, ip net.
 	return tunnelConnection, nil
 }
 
-func (tm *TunnelManager) RemoveTunnel(tunnel *TunnelConnection) {
+func (tm *SkipperManager) RemoveTunnel(tunnel *TunnelConnection) {
 	tm.Mutex.Lock()
 	defer tm.Mutex.Unlock()
 	defer tunnel.Connection.Close()
 	delete(tm.TunnelConnectionsMap, tunnel.Subdomain)
 }
 
-func (tm *TunnelManager) GetTunnel(subdomain string) (*TunnelConnection, error) {
+func (tm *SkipperManager) GetTunnel(subdomain string) (*TunnelConnection, error) {
 	tm.Mutex.Lock()
 	tunnel, exists := tm.TunnelConnectionsMap[subdomain]
 	tm.Mutex.Unlock()
