@@ -30,15 +30,17 @@ func ParseSubdomain(host string) (string, bool) {
 	return subdomain, true
 }
 
-func ObtainStreamId(tc *tunnel.TunnelConnection) uint64 {
-	tc.StreamMutex.Lock()
-	defer tc.StreamMutex.Unlock()
-	tc.StreamId++
+func DefineStreamId(tc *tunnel.TunnelConnection,ch chan *frame.InternalFrame ) uint64 {
+	tc.Locker.Lock()
+	defer tc.Locker.Unlock()
+	nextStreamId:=tc.StreamId+1
+	tc.StreamMap[nextStreamId] = ch
 	return tc.StreamId
 }
 
-func SaveResponseChannel(tc *tunnel.TunnelConnection, streamId uint64, ch chan *frame.InternalFrame) {
-	tc.MapMutex.Lock()
-	defer tc.MapMutex.Unlock()
-	tc.StreamMap[streamId] = ch
+
+func deleteChannelFromMap(tc *tunnel.TunnelConnection, streamId uint64) {
+	tc.Locker.Lock()
+	defer tc.Locker.Unlock()
+	delete(tc.StreamMap, streamId)
 }

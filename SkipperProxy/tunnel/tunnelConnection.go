@@ -12,17 +12,15 @@ import (
 )
 
 type TunnelConnection struct {
-	Subdomain  string
-	Connection net.Conn
-	ip         net.Addr
-	StreamId  uint64
-	StreamMutex sync.Mutex
-
+	Subdomain   string
+	Connection  net.Conn
+	ip          net.Addr
+	StreamId    uint64
 	StreamMap map[uint64]chan *frame.InternalFrame
-	MapMutex sync.Mutex
+	Locker sync.Mutex
 }
 
-var internalPayloadPool= &sync.Pool{
+var InternalPayloadPool = &sync.Pool{
 	New: func() interface{} {
 		return &frame.InternalFrame{}
 	},
@@ -47,21 +45,21 @@ func (tc *TunnelConnection) StartReadLoop() {
 		switch frameType {
 		case constants.TunnelResponseType:
 
-			item:= internalPayloadPool.Get()
+			item := InternalPayloadPool.Get()
 			// type assert, in this case item is an empty interface{} so we need to use this type to give it a value typed
 			// the go compiler doesnt know that there is an especiied type here.
-			frame:= item.(*frame.InternalFrame)
-			frame.StreamId= streamId
-			frame.Payload= payload
+			frame := item.(*frame.InternalFrame)
+			frame.StreamId = streamId
+			frame.Payload = payload
 
-			tc.MapMutex.Lock()
-			ResponseChannel, exists:= tc.StreamMap[streamId]
-			tc.MapMutex.Unlock()
-			if !exists{
+			tc.Locker.Lock()
+			ResponseChannel, exists := tc.StreamMap[streamId]
+			tc.Locker.Unlock()
+			if !exists {
 				continue
 			}
 			// non blocking action becasue its a buffered channel
-			ResponseChannel<-frame
+			ResponseChannel <- frame
 		case constants.TunnelPong:
 			fmt.Println("tunnel is kept oppened")
 		}

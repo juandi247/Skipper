@@ -15,7 +15,7 @@ type httpServer struct {
 
 }
 
-func CreateHttpServer(port string, tm *tunnel.TunnelManager) *httpServer {
+func CreateHttpServer(port string, tm tunnel.TunnelManager) *httpServer {
 	httpMultiplexer := http.NewServeMux()
 	// we register it as wildcard
 	httpMultiplexer.HandleFunc("/", ClosureFunc(tm))
@@ -37,7 +37,7 @@ func (s *httpServer) StartServer() error {
 	return nil
 }
 
-func ClosureFunc(tm *tunnel.TunnelManager) http.HandlerFunc {
+func ClosureFunc(tm tunnel.TunnelManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		subdomain, exists := ParseSubdomain(r.Host)
 
@@ -45,7 +45,7 @@ func ClosureFunc(tm *tunnel.TunnelManager) http.HandlerFunc {
 			w.Write([]byte("we are gonna show skipper.lat page"))
 		}
 
-		tunnel, err := tm.GetTunnel(subdomain)
+		connectedTunnel, err := tm.GetTunnel(subdomain)
 
 		if err != nil {
 			fmt.Println("the subdomain doenst exist")
@@ -60,8 +60,9 @@ func ClosureFunc(tm *tunnel.TunnelManager) http.HandlerFunc {
 			w.Write([]byte("error seralizatin the request"))
 			return
 		}
-
-		nextStreamId := ObtainStreamId(tunnel)
+		responseChannel := make(chan *frame.InternalFrame, 1)
+		nextStreamId := DefineStreamId(connectedTunnel, responseChannel)
+		defer deleteChannelFromMap(connectedTunnel, nextStreamId)
 
 		requestFrame := frame.CreateFrame(
 			1,                          //version
@@ -70,27 +71,27 @@ func ClosureFunc(tm *tunnel.TunnelManager) http.HandlerFunc {
 			payloadLength)
 
 		requestFrame.Encode(finalPayload)
-
-		// buffered channel that waits for the response
-		responseChannel := make(chan *frame.InternalFrame, 1)
-		SaveResponseChannel(tunnel,nextStreamId,responseChannel)
-		
 		select {
-		case <-responseChannel:
+		case ResponseFrame := <-responseChannel:
+
+			Response, err := DeserializeResponse(ResponseFrame.Payload)
+
+			if err != nil {
+				fmt.Println("ERRORRRR despues de desserliar", err)
+				return
+			}
+			tunnel.InternalPayloadPool.Put(ResponseFrame)
+
+			w.Write([]byte(Response.Body))
 			fmt.Println("cosoo")
 			w.Write([]byte("AAAAA RECBIIMOS LE CHHANELL EL EMSNAJE"))
-
+		// todo: use a context with deadline to cancel the request if it doesnt arrive
 		default:
-			fmt.Println("ERRO ACA")
+			fmt.Print("mimi")
 		}
 		// make a reader of headers, check if its a cached thing
 		// check if its json, xml, the format
 		// depending on that make a switch that evaluates that and makes a w.Write to the user
-
-		// the handler is over
-
-		//! Delete the value from the map where the channel and the stream id was
-		// ! if not would be a memory leak
 
 	}
 }

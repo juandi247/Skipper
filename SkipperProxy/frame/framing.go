@@ -28,7 +28,6 @@ type InternalFrame struct{
 	Payload
 }
 
-// todo: serialize data payload and save data on a buffer to make a conn.Write
 func CreateFrame(version uint8, frameType uint8, streamId uint64, payloadLen uint32) *TcpFrame {
 	return &TcpFrame{
 		Magic:      constants.SkipperMagic,
