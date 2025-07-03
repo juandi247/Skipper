@@ -52,7 +52,6 @@ func (tm *SkipperManager) RegisterTunnel(subdomain string, conn net.Conn, ip net
 func (tm *SkipperManager) RemoveTunnel(tunnel *TunnelConnection) {
 	tm.Mutex.Lock()
 	defer tm.Mutex.Unlock()
-	defer tunnel.Connection.Close()
 	delete(tm.TunnelConnectionsMap, tunnel.Subdomain)
 }
 

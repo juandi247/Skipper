@@ -52,7 +52,7 @@ func (s *TcpServer) handleNewConnection(conn net.Conn) {
 		fmt.Println("vamos a cerrar la conexion", conn)
 		conn.Close()
 	}()
-	frameType, _, _, payload, err := frame.ReadCompleteFrame(conn, true)
+	frameType, _, _, payload, err := frame.ReadCompleteFrame(conn)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -69,5 +69,8 @@ func (s *TcpServer) handleNewConnection(conn net.Conn) {
 
 	fmt.Println("tunnel registered Succesffulty and with a Acknoledge succesffull")
 
-	tunnelConnection.StartReadLoop()
+	err = tunnelConnection.StartReadLoop()
+	if err != nil {
+		s.tm.RemoveTunnel(tunnelConnection)
+	}
 }

@@ -27,10 +27,9 @@ func CreateHttpServer(port string, tm tunnel.TunnelManager) *httpServer {
 }
 
 func (s *httpServer) StartServer() error {
-	fmt.Println("intentmos empezarlo")
 	err := http.ListenAndServe(s.port, s.muxer)
 	if err != nil {
-		fmt.Println("ERORRRR")
+		fmt.Println("ERORRRR", err)
 		return fmt.Errorf(err.Error())
 	}
 	fmt.Println("empezo el de http")

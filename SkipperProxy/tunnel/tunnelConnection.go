@@ -34,12 +34,13 @@ func CreateTunnelConnection(subdomain string, conn net.Conn, ip net.Addr) *Tunne
 	}
 }
 
-func (tc *TunnelConnection) StartReadLoop() {
+func (tc *TunnelConnection) StartReadLoop() error {
 	for {
-		frameType, streamId, _, payload, err := frame.ReadCompleteFrame(tc.Connection, false)
+		fmt.Println("we are on the start loop")
+		frameType, streamId, _, payload, err := frame.ReadCompleteFrame(tc.Connection)
 		if err != nil {
 			fmt.Println("error on reading loop", err)
-			return
+			return fmt.Errorf("error reading loop or connection closed",err)
 		}
 
 		switch frameType {
