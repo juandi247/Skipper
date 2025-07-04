@@ -8,6 +8,7 @@ import (
 	"net"
 	"slices"
 	"time"
+	// "time"
 )
 
 const MAX_PAYLOAD_LENGTH = 10000000000
@@ -83,24 +84,16 @@ func DecodeHeader(buffer []byte) (uint8, uint64, uint32, error) {
 2.Decode the frame and return the important values (in this decode we validate the magic number, validate framing type etc)
 3.create a payloadbuffer if the payload has anything and return it, if not return the payload null
 */
-func ReadCompleteFrame(conn net.Conn, isControlType bool) (uint8, uint64, uint32, Payload, error) {
+func ReadCompleteFrame(conn net.Conn) (uint8, uint64, uint32, Payload, error) {
 
-	// this returns a time
-	deadlineTime := time.Now()
-	/* here the setREadDEadline only recevies a strcut deadline (no pointer)
-	   but we need to check the dureation of ddline, so we need to add that
-	    .add so it doesnt get exectuted right on
-	*/
-	if err := conn.SetReadDeadline(deadlineTime.Add(2 * time.Second)); err != nil {
-		fmt.Println("Error en readline deadlineeee mimiim")
-		return 0, 0, 0, nil, fmt.Errorf(err.Error(), "error reading because of timouttt")
-	}
-
-	fmt.Println("we are reding the frame")
+	currentTime:= time.Now()
+	conn.SetReadDeadline(currentTime.Add(time.Second*5))
+	
+	fmt.Println("we are reading the frame")
 	buffer := make([]byte, 20)
 	_, err := io.ReadFull(conn, buffer)
 	if err != nil {
-		return 0, 0, 0, nil, fmt.Errorf("ERROR Reading the buffer")
+		return 0, 0, 0, nil, fmt.Errorf("ERROR Reading the buffer", err)
 	}
 	frameType, streamId, Payloadlength, err := DecodeHeader(buffer)
 
