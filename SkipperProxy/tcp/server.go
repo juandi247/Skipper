@@ -65,6 +65,7 @@ func (s *TcpServer) handleNewConnection(conn net.Conn) {
 	tunnelConnection, err := s.tm.RegisterTunnel(string(payload), conn, conn.RemoteAddr())
 	if err != nil {
 		fmt.Println("ERROR regitrndo tunnel", err)
+		return
 	}
 
 	fmt.Println("tunnel registered Succesffulty and with a Acknoledge succesffull")

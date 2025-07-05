@@ -7,7 +7,6 @@ import (
 	"io"
 	"net"
 	"slices"
-	"time"
 	// "time"
 )
 
@@ -86,12 +85,9 @@ func DecodeHeader(buffer []byte) (uint8, uint64, uint32, error) {
 */
 func ReadCompleteFrame(conn net.Conn) (uint8, uint64, uint32, Payload, error) {
 
-	currentTime:= time.Now()
-	conn.SetReadDeadline(currentTime.Add(time.Second*5))
-	
 	fmt.Println("we are reading the frame")
 	buffer := make([]byte, 20)
-	_, err := io.ReadFull(conn, buffer)
+	_, err := io.ReadFull(conn, buffer)	
 	if err != nil {
 		return 0, 0, 0, nil, fmt.Errorf("ERROR Reading the buffer", err)
 	}
