@@ -4,36 +4,42 @@ import (
 	"SkipperTunnel/constants"
 	"flag"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
 )
 
-func StartSkipper() (string, int, error) {
-	var subdomain string
-	var port int
-	var flagError string
+/*This function returns 
+string -> the valid subdomain
+sstring-> the parsed localhost url with the port: e.g localhost:8080
+an error */ 
+func FlagValidation() (string, string, error) {
 
+	var port int
+	var subdomain string
 	printSkipperStart()
 
-	flag.IntVar(&port, "port", 0, "The -p or -port flag is a valid & active port where your app is running. \n e.g -p 8080")
+	flag.IntVar(&port , "port", 0, "The -p or -port flag is a valid & active port where your app is running. \n e.g -p 8080")
 	flag.StringVar(&subdomain, "subdomain", "", "The -s or -subdomain flag is the subdomain that you want to use for your app. \n e.g -p miSubdomain, this will be showed as misubdomain.skipper.lat")
 	flag.Parse()
 	if port < 1024 || port > 10000 {
-		flagError="The port flag is invalid, please use ports on the valid range like 1024 or bigger"
-		constants.PrintWithColor(constants.Red, flagError)
+		constants.PrintWithColor(constants.Red,"The port flag is invalid, please use ports on the valid range like 1024 or bigger")
 		flag.CommandLine.Usage()
-		return "", 0, fmt.Errorf(flagError)
+		return "", "", fmt.Errorf("invaild localhostPort")
 	}
+
+	localhostUrl:= "localhost:"+strconv.Itoa(port)
 
 	err := ValidateSubdomain(subdomain)
 	if err != nil {
 		flag.Usage()
-		return "", 0, err
+		return "", "",fmt.Errorf(err.Error())
 	}
-
-	return subdomain, port, nil
+	return subdomain, localhostUrl, nil
 }
+
+
 
 func ValidateSubdomain(subdomain string) error {
 	for _, letterRune := range subdomain {
@@ -49,10 +55,6 @@ func ValidateSubdomain(subdomain string) error {
 	}
 	return nil
 }
-
-
-
-
 
 
 func printSkipperStart() {
