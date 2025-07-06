@@ -6,15 +6,16 @@ import (
 )
 
 type Tunnel struct {
-	localhostUrl string
-	proxyConn    net.Conn
-	ctx          context.Context
+	Subdomain string
+	LocalhostUrl string
+	ProxyUrl string
+	ProxyConn    net.Conn
+	Ctx          context.Context
 }
 
-func NewTunnel(localhost string, proxyConn net.Conn, ctx context.Context) *Tunnel {
+func NewTunnel(proxyUrl string, ctx context.Context) *Tunnel {
 	return &Tunnel{
-		localhostUrl: localhost,
-		proxyConn:    proxyConn,
-		ctx:          ctx,
+		ProxyUrl: proxyUrl,
+		Ctx:          ctx,
 	}
 }
