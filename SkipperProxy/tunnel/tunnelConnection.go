@@ -17,7 +17,7 @@ type TunnelConnection struct {
 	ip          net.Addr
 	StreamId    uint64
 	StreamMap map[uint64]chan *frame.InternalFrame
-	Locker sync.Mutex
+	Locker *sync.Mutex
 }
 
 var InternalPayloadPool = &sync.Pool{
@@ -31,6 +31,8 @@ func CreateTunnelConnection(subdomain string, conn net.Conn, ip net.Addr) *Tunne
 		Subdomain:  subdomain,
 		Connection: conn,
 		ip:         ip,
+		StreamMap: make(map[uint64]chan *frame.InternalFrame),
+		Locker: &sync.Mutex{},
 	}
 }
 
