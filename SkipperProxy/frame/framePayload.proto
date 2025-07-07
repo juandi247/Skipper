@@ -16,7 +16,6 @@ message Request {
     string Path = 4;
     map<string, HeaderValues> Headers = 5;
     bytes Body = 6;
-    int64 RequestId = 7;
 }
 
 message HeaderValues{
@@ -30,6 +29,5 @@ message Response {
     int32 ProtoMinor = 4;
     string Proto = 5;
     map<string, HeaderValues> Headers = 6;
-    string Body = 7;
-    int64 RequestId = 8;
+    bytes Body = 7;
 }
