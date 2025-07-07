@@ -27,7 +27,6 @@ func SerializeHttpRequest(subdomain string, r *http.Request) ([]byte, uint32, er
 		Path:      r.RequestURI,
 		Headers:   headersMap,
 		Body:      requestBody,
-		RequestId: 1232323,
 	}
 
 	finalPayload, err := proto.Marshal(finalRequest)
@@ -35,7 +34,7 @@ func SerializeHttpRequest(subdomain string, r *http.Request) ([]byte, uint32, er
 		return nil, 0, fmt.Errorf("error marshaling the requst", err)
 	}
 
-	return finalPayload, uint32(len(requestBody)), err
+	return finalPayload, uint32(len(finalPayload)), err
 }
 
 func DeserializeResponse(payload []byte) (*FramePayloadpb.Response,error){

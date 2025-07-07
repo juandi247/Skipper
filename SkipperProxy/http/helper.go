@@ -35,6 +35,7 @@ func DefineStreamId(tc *tunnel.TunnelConnection,ch chan *frame.InternalFrame ) u
 	defer tc.Locker.Unlock()
 	nextStreamId:=tc.StreamId+1
 	tc.StreamMap[nextStreamId] = ch
+	tc.StreamId= nextStreamId
 	return tc.StreamId
 }
 
