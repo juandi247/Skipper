@@ -5,6 +5,7 @@ import (
 	skipperflag "SkipperTunnel/flags"
 	"SkipperTunnel/forward"
 	"SkipperTunnel/proxy"
+	"SkipperTunnel/worker"
 	"fmt"
 	"net"
 	"time"
@@ -12,6 +13,11 @@ import (
 
 type FsmFunc func(*Tunnel) FsmFunc
 
+/*
+This is my FSM implementation for the skipper tunnel.
+Its inspired by Rob Pike´s code for go lexer, that just opened my mind
+on how to write idiomatic fsm without a big switch :)
+*/
 func (t *Tunnel) FsmStart() {
 	var state FsmFunc = t.HandleInitialization()
 	for state != nil {
@@ -40,9 +46,6 @@ func (t *Tunnel) HandleLocalhostConnection() FsmFunc {
 		constants.PrintWithColor(constants.Red, "failed to connect to your localhost app. Check that the port is correct")
 		return nil
 	}
-	// todo: add to this goroutine the switch and power to detemirne the cancell of all things
-	go forward.PingLocalhost(t.Ctx, t.LocalhostUrl)
-
 	return t.HandleProxyConnection()
 }
 
@@ -56,12 +59,10 @@ func (t *Tunnel) HandleProxyConnection() FsmFunc {
 	t.ProxyConn = proxyConn
 	err = proxy.SendRequestPacket(t.Subdomain, t.ProxyConn)
 	if err != nil {
-		// todo: send error to handler
 		return nil
 	}
 	err = proxy.ReadProxyConnResponse(t.ProxyConn)
 	if err != nil {
-		// todo: send error to handler (because we need to stop the other goroutine of pinging localhost)
 		return nil
 	}
 
@@ -69,7 +70,22 @@ func (t *Tunnel) HandleProxyConnection() FsmFunc {
 }
 
 func (t *Tunnel) HandleActiveTunnel() FsmFunc {
-	proxy.StartReactor(t.Ctx, t.ProxyConn)
-	
+	go forward.PingLocalhost(t.Ctx, t.LocalhostUrl, t.ErrChan)
+
+	// todo: check number of goroutines
+	for i:=0; i<= 35000;i++ {
+		go worker.Worker(t.Ctx, t.ProxyConn, t.RequestChan, t.LocalhostUrl)
+	}
+
+	go proxy.StartReactor(t.Ctx, t.ProxyConn, t.ErrChan, t.RequestChan, t.syncPool)
+
+	select {
+	case <-t.Ctx.Done():
+		fmt.Println("the user cancelled everything with control c probalby")
+	case err := <-t.ErrChan:
+		constants.PrintWithColor(constants.Red, "we received an error from the channel"+err.Error())
+	}
+	// cleanup the connection
+	t.ProxyConn.Close()
 	return nil
 }
