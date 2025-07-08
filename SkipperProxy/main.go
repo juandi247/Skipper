@@ -17,7 +17,11 @@ Juan Diego Diaz
 func main() {
 	tm := tunnel.CreateSkipperManager()
 	wg := sync.WaitGroup{}
-	httpServer := http.CreateHttpServer(":8080", tm)
+
+	certFile := "/etc/letsencrypt/live/skipper.lat-0001/fullchain.pem"
+	keyFile := "/etc/letsencrypt/live/skipper.lat-0001/privkey.pem"
+
+	httpServer := http.CreateHttpServer(":8080", tm, true ,certFile, keyFile )
 	wg.Add(1)
 	go httpServer.StartServer()
 	tcpServer := tcp.CreateTcpServer(":9000", tm)
