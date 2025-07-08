@@ -6,28 +6,40 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"sync"
 )
 
-func StartReactor(ctx context.Context, conn net.Conn) error {
+func StartReactor(ctx context.Context, conn net.Conn, errChan chan error, requestChan chan *frame.InternalFrame, sp *sync.Pool) {
 	for {
 		fmt.Println("we are on the reading loop general")
-		frameType, _, _, payload, err := frame.ReadCompleteFrame(conn)
+		frameType, streamId, _, payload, err := frame.ReadCompleteFrame(conn)
 		if err != nil {
-			fmt.Println("error reading the proxy packet", err)
-			return fmt.Errorf("error reading loop or connection closed", err)
+			select {
+			case <-errChan:
+				fmt.Println("se cancelo fue por un error xterno, pero pues desbloqueamos usando el cancel")
+				return
+			default:
+				errChan<-err
+				fmt.Println("error reading the proxy packet", err)
+				return
+			}
 		}
 
 		switch frameType {
 		case constants.ProxyRequestType:
-			// deserilaize and decode all and redierct to a workerpool
+			item := sp.Get()
+			// type assert, in this case item is an empty interface{} so we need to use this type to give it a value typed
+			// the go compiler doesnt know that there is an especiied type here.
+			frame := item.(*frame.InternalFrame)
+			frame.StreamId = streamId
+			frame.Payload = payload
+			fmt.Println("VMAOS A VER QUE HAY DENTRO DEL PAYLAOD")
+			fmt.Println(string(frame.Payload))
 
-		case constants.ProxyPing:
-			// this is just pinging
-			fmt.Println(string(payload))
-			return err
+			// non blocking action becasue its a buffered channel
+			requestChan <- frame
+		case constants.TunnelPong:
+			fmt.Println("tunnel is kept oppened")
 		}
-		fmt.Println("porque llegamos aca?")
-		return err
 	}
 }
-

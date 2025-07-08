@@ -7,15 +7,22 @@ import (
 	"time"
 )
 
-func PingLocalhost(ctx context.Context, url string) {
+func PingLocalhost(ctx context.Context, url string, errChan chan error) {
+	ticker := time.NewTicker(time.Second * 5)
 	for {
-		_, err := net.DialTimeout("tcp", url, time.Second*1)
-		if err!=nil{
-			fmt.Println("something failed on lcoalhost ping", err)
-			// todo: add the send to the error channel handler, meaning that we need to cancell all the opened goroutines
+		select {
+		case <-ctx.Done():
+			ticker.Stop()
+			fmt.Println("STOPPED THE GOROUTINE OF PINGING LOCALHOSTSTTT!!")
 			return
+		case <-ticker.C:
+			_, err := net.DialTimeout("tcp", url, time.Second*1)
+			if err != nil {
+				fmt.Println("something failed on lcoalhost ping", err)
+				errChan <- err
+				return
+			}
+			fmt.Println("ping succesfull")
 		}
-		fmt.Println("ping succesfull")
-		time.Sleep(time.Second*2)
 	}
 }

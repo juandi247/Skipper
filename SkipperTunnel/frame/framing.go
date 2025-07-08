@@ -7,8 +7,6 @@ import (
 	"io"
 	"net"
 	"slices"
-	"time"
-	// "time"
 )
 
 const MAX_PAYLOAD_LENGTH = 10000000000
@@ -42,7 +40,6 @@ func CreateFrame(version uint8, frameType uint8, streamId uint64, payloadLen uin
 func (f *TcpFrame) Encode(payloadBuffer Payload) []byte {
 	FinalBuffer := make([]byte, 20+f.PayloadLen)
 
-	fmt.Println("encondinggg", string(payloadBuffer))
 
 	copy(FinalBuffer, constants.SkipperMagicBuffer[:])
 	FinalBuffer[4] = f.Version
@@ -87,9 +84,6 @@ func DecodeHeader(buffer []byte) (uint8, uint64, uint32, error) {
 3.create a payloadbuffer if the payload has anything and return it, if not return the payload null
 */
 func ReadCompleteFrame(conn net.Conn) (uint8, uint64, uint32, Payload, error) {
-
-	currentTime:= time.Now()
-	conn.SetReadDeadline(currentTime.Add(time.Second*5))
 	
 	fmt.Println("we are reading the frame")
 	buffer := make([]byte, 20)

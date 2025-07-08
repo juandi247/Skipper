@@ -5,7 +5,6 @@ import (
 	"SkipperTunnel/frame"
 	"fmt"
 	"net"
-	"time"
 )
 
 func SendRequestPacket(subdomain string, conn net.Conn) error {
@@ -19,12 +18,6 @@ func SendRequestPacket(subdomain string, conn net.Conn) error {
 }
 
 func ReadProxyConnResponse(conn net.Conn) error {
-	timeError := conn.SetReadDeadline(time.Now().Add(time.Second * 3))
-	if timeError != nil {
-		fmt.Println("ERROR on dedlinee")
-		return timeError
-	}
-
 	fmt.Println("we are on the reading loop for acknowledge")
 	frameType, _, _, payload, err := frame.ReadCompleteFrame(conn)
 	if err != nil {

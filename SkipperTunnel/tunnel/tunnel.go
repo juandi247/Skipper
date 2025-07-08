@@ -1,8 +1,10 @@
 package tunnel
 
 import (
+	"SkipperTunnel/frame"
 	"context"
 	"net"
+	"sync"
 )
 
 type Tunnel struct {
@@ -11,11 +13,17 @@ type Tunnel struct {
 	ProxyUrl string
 	ProxyConn    net.Conn
 	Ctx          context.Context
+	ErrChan 		chan error
+	RequestChan 	chan *frame.InternalFrame
+	syncPool		*sync.Pool
 }
 
-func NewTunnel(proxyUrl string, ctx context.Context) *Tunnel {
+func NewTunnel(proxyUrl string, ctx context.Context , errChan chan error, requestChan chan *frame.InternalFrame, sp *sync.Pool) *Tunnel {
 	return &Tunnel{
 		ProxyUrl: proxyUrl,
 		Ctx:          ctx,
+		ErrChan: errChan,
+		RequestChan: requestChan,
+		syncPool: sp,
 	}
 }
