@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 func ClosureFunc(tm tunnel.TunnelManager) http.HandlerFunc {
@@ -50,25 +51,29 @@ func ClosureFunc(tm tunnel.TunnelManager) http.HandlerFunc {
 			http.ServeFile(w, r, "templates/timeout.html")
 			return
 		}
-
-		ResponseFrame := <-responseChannel
-		Response, err := DeserializeResponse(ResponseFrame.Payload)
-		if err != nil {
-			http.ServeFile(w, r, "templates/timeout.html")
-			fmt.Println("ERRORRRR despues de desserliar", err)
-			return
-		}
-		tunnel.InternalPayloadPool.Put(ResponseFrame)
-
-		for key, mivalue := range Response.GetHeaders() {
-			for _, value := range mivalue.GetHeaderValues() {
-				w.Header().Set(key, value)
+		select {
+		case ResponseFrame := <-responseChannel:
+			Response, err := DeserializeResponse(ResponseFrame.Payload)
+			if err != nil {
+				http.ServeFile(w, r, "templates/timeout.html")
+				fmt.Println("ERRORRRR despues de desserliar", err)
+				return
 			}
-		}
+			tunnel.InternalPayloadPool.Put(ResponseFrame)
 
-		w.WriteHeader(int(Response.GetStatusCode()))
-		bodyReader := bytes.NewReader(Response.GetBody())
-		io.Copy(w, bodyReader)
+			for key, mivalue := range Response.GetHeaders() {
+				for _, value := range mivalue.GetHeaderValues() {
+					w.Header().Set(key, value)
+				}
+			}
+
+			w.WriteHeader(int(Response.GetStatusCode()))
+			bodyReader := bytes.NewReader(Response.GetBody())
+			io.Copy(w, bodyReader)
+
+		case <-time.After(time.Second * 10):
+			http.ServeFile(w, r, "template/timeout.html")
+		}
 
 	}
 }
