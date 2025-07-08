@@ -22,7 +22,7 @@ func PingLocalhost(ctx context.Context, url string, errChan chan error) {
 				errChan <- err
 				return
 			}
-			fmt.Println("ping succesfull")
+			// fmt.Println("ping succesfull")
 		}
 	}
 }

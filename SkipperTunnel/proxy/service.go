@@ -11,12 +11,10 @@ import (
 
 func StartReactor(ctx context.Context, conn net.Conn, errChan chan error, requestChan chan *frame.InternalFrame, sp *sync.Pool) {
 	for {
-		fmt.Println("we are on the reading loop general")
 		frameType, streamId, _, payload, err := frame.ReadCompleteFrame(conn)
 		if err != nil {
 			select {
 			case <-errChan:
-				fmt.Println("se cancelo fue por un error xterno, pero pues desbloqueamos usando el cancel")
 				return
 			default:
 				errChan<-err
@@ -33,9 +31,7 @@ func StartReactor(ctx context.Context, conn net.Conn, errChan chan error, reques
 			frame := item.(*frame.InternalFrame)
 			frame.StreamId = streamId
 			frame.Payload = payload
-			fmt.Println("VMAOS A VER QUE HAY DENTRO DEL PAYLAOD")
-			fmt.Println(string(frame.Payload))
-
+			// fmt.Println("Received a Request")
 			// non blocking action becasue its a buffered channel
 			requestChan <- frame
 		case constants.TunnelPong:

@@ -7,7 +7,6 @@ import (
 	"SkipperTunnel/frame"
 	"SkipperTunnel/tunnel"
 	"context"
-	"fmt"
 	"sync"
 )
 
@@ -26,9 +25,8 @@ func main() {
 		close(errChan)
 		close(requestChan)
 		cancel()
-		fmt.Println("sendet the CANCEL!")
 	}()
 
-	tn := tunnel.NewTunnel("localhost:9000", ctx, errChan, requestChan, syncPool)
+	tn := tunnel.NewTunnel("skipper.lat:9000", ctx, errChan, requestChan, syncPool)
 	tn.FsmStart()
 }

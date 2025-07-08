@@ -79,11 +79,13 @@ func (t *Tunnel) HandleActiveTunnel() FsmFunc {
 
 	go proxy.StartReactor(t.Ctx, t.ProxyConn, t.ErrChan, t.RequestChan, t.syncPool)
 
+	fmt.Print("You can now visit the page:")
+	mainDomain:= fmt.Sprintf(" %v.skipper.lat \n", t.Subdomain)
+	constants.PrintWithColor(constants.Cyan, mainDomain)
 	select {
 	case <-t.Ctx.Done():
-		fmt.Println("the user cancelled everything with control c probalby")
 	case err := <-t.ErrChan:
-		constants.PrintWithColor(constants.Red, "we received an error from the channel"+err.Error())
+		constants.PrintWithColor(constants.Red, "[FATAL ERROR]: "+err.Error())
 	}
 	// cleanup the connection
 	t.ProxyConn.Close()

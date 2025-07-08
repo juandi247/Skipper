@@ -18,22 +18,21 @@ func SendRequestPacket(subdomain string, conn net.Conn) error {
 }
 
 func ReadProxyConnResponse(conn net.Conn) error {
-	fmt.Println("we are on the reading loop for acknowledge")
+	fmt.Println("Waiting to stablish the connection with the proxy...")
 	frameType, _, _, payload, err := frame.ReadCompleteFrame(conn)
 	if err != nil {
-		fmt.Println("error reading the proxy packet", err)
-		return fmt.Errorf("error reading loop or connection closed", err)
+		constants.PrintWithColor(constants.Red, "error connecting with the skipperProxy, try again later")
+		return err
 	}
 
 	switch frameType {
 	case constants.Control_TunnelAck:
-		fmt.Println("GOOD WE RECEIVED ALL GOOD, to start the reading of the requestss")
+		fmt.Println("The connection with the proxy was successfull")
 		return nil
 	case constants.Control_TunnelError:
-		fmt.Println(string(payload))
-		return err
+		constants.PrintWithColor(constants.Red, "error connecting with the skipperProxy. "+ string(payload))
+		return fmt.Errorf("")
 	}
-	fmt.Println("porque llegamos aca?")
 	return err
 }
 

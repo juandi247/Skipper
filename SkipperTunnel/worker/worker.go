@@ -25,14 +25,14 @@ func Worker(ctx context.Context, proxyConn net.Conn, reactorChan chan *frame.Int
 			rawRequest, err := forward.DeserializeRequest(chanRequest.Payload)
 			
 			if err != nil {
-				fmt.Println("error deserializig request", err)
+				constants.PrintWithColor(constants.Red, "error deserializing the request from the proxy: "+err.Error() )
 				continue
 			}
 
 			bodyReader := bytes.NewReader(rawRequest.GetBody())
 			request, err := http.NewRequest(rawRequest.GetMethod(), "http://"+localhostUrl+rawRequest.GetPath(), bodyReader)
 			if err != nil {
-				fmt.Println("erro creating request", err)
+				constants.PrintWithColor(constants.Red, "Error creating a request for "+rawRequest.Method + err.Error() )
 				continue
 			}
 			headerMap := make(map[string][]string)
@@ -49,14 +49,14 @@ func Worker(ctx context.Context, proxyConn net.Conn, reactorChan chan *frame.Int
 			}
 			httpResponse, err:= httpClient.Do(request)
 			if err != nil {
-				fmt.Println("error making request", err)
+				constants.PrintWithColor(constants.Red, "error executing request " + err.Error() )
 				continue
 			}
 
 			payload, payloadLength, err:= SerializeHttpResponse(httpResponse)
 
 			if err!=nil{
-				fmt.Println("error serlializging request", err)
+				constants.PrintWithColor(constants.Red, "error serializing response from localhost" + err.Error() )
 				continue
 			}
 
@@ -72,8 +72,6 @@ func Worker(ctx context.Context, proxyConn net.Conn, reactorChan chan *frame.Int
 		}
 	}
 }
-
-
 
 
 
@@ -101,7 +99,7 @@ func SerializeHttpResponse(r *http.Response) ([]byte, uint32, error) {
 
 	finalPayload, err := proto.Marshal(finalRequest)
 	if err != nil {
-		return nil, 0, fmt.Errorf("error marshaling the requst", err)
+		return nil, 0, fmt.Errorf("error marshaling the request", err)
 	}
 	return finalPayload, uint32(len(finalPayload)), err
 }
