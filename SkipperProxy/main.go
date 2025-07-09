@@ -21,7 +21,7 @@ func main() {
 	certFile := "/etc/letsencrypt/live/skipper.lat-0001/fullchain.pem"
 	keyFile := "/etc/letsencrypt/live/skipper.lat-0001/privkey.pem"
 
-	httpServer := http.CreateHttpServer(":443", tm, true ,certFile, keyFile )
+	httpServer := http.CreateHttpServer(":443", tm, true, certFile, keyFile)
 	wg.Add(1)
 	go httpServer.StartServer()
 	tcpServer := tcp.CreateTcpServer(":9000", tm)
@@ -29,5 +29,4 @@ func main() {
 	go tcpServer.StartServer()
 	fmt.Println("tcp server started")
 	wg.Wait()
-
 }

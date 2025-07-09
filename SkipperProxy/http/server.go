@@ -44,7 +44,7 @@ func (s *httpServer) StartServer() error {
 	err := s.startFunc()
 	if err != nil {
 		fmt.Println("ERORRRR", err)
-		return fmt.Errorf(err.Error())
+		return fmt.Errorf("%s", err.Error())
 	}
 	fmt.Println("empezo el de http")
 	return nil

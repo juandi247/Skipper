@@ -31,7 +31,7 @@ func SerializeHttpRequest(subdomain string, r *http.Request) ([]byte, uint32, er
 
 	finalPayload, err := proto.Marshal(finalRequest)
 	if err != nil {
-		return nil, 0, fmt.Errorf("error marshaling the requst", err)
+		return nil, 0, fmt.Errorf("%s", err.Error())
 	}
 
 	return finalPayload, uint32(len(finalPayload)), err
@@ -41,7 +41,7 @@ func DeserializeResponse(payload []byte) (*FramePayloadpb.Response,error){
 	frame:= &FramePayloadpb.Response{}
 	err := proto.Unmarshal(payload,frame)
 	if err!=nil{
-		return nil, fmt.Errorf("ERror unmersshling", err)
+		return nil, fmt.Errorf("%s", err.Error())
 	} 
 	return frame, nil
 }

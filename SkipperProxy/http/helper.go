@@ -5,9 +5,12 @@ import (
 	"SkipperProxy/frame"
 	"SkipperProxy/tunnel"
 	"strings"
+	"unicode"
 )
 
 func ParseSubdomain(host string) (string, bool) {
+	host=strings.ToLower(host)
+
 	if host == constants.SkipperUrl || host == constants.WWWSkipperUrl {
 		return "", false
 	}
@@ -21,11 +24,11 @@ func ParseSubdomain(host string) (string, bool) {
 	// now we evaluate if the subdomain contains previously a www. prefix
 	subdomain, _ = strings.CutPrefix(subdomain, "www.")
 
-	// this is kust to evaluate that the subdomain is not like subdomain.anothersubdmain.another.skipper.lat
-	// on our bussines logic for now we only allow a single subdomain
-	containsADot := strings.Contains(subdomain, ".")
-	if containsADot {
-		return "", false
+	// this is to avoid double "." or "!"#$%&/()=?", etc on our subdomain call. The browser helps us to do that but still
+	for _, letterRune:=range subdomain{
+		if !unicode.IsLetter(letterRune) && !unicode.IsNumber(letterRune){
+			return "", false
+		}
 	}
 	return subdomain, true
 }
