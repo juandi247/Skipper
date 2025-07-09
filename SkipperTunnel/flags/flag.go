@@ -23,7 +23,7 @@ func FlagValidation() (string, string, error) {
 	flag.IntVar(&port , "port", 0, "The -p or -port flag is a valid & active port where your app is running. \n e.g -p 8080")
 	flag.StringVar(&subdomain, "subdomain", "", "The -s or -subdomain flag is the subdomain that you want to use for your app. \n e.g -p miSubdomain, this will be showed as misubdomain.skipper.lat")
 	flag.Parse()
-	if port < 1024 || port > 10000 {
+	if port < 1024 || port > 100000 {
 		constants.PrintWithColor(constants.Red,"The port flag is invalid, please use ports on the valid range like 1024 or bigger")
 		flag.CommandLine.Usage()
 		return "", "", fmt.Errorf("invaild localhostPort")
@@ -31,10 +31,14 @@ func FlagValidation() (string, string, error) {
 
 	localhostUrl:= "localhost:"+strconv.Itoa(port)
 
+	subdomain= strings.ToLower(subdomain)
+	subdomain = strings.TrimSpace(subdomain)
+
 	err := ValidateSubdomain(subdomain)
 	if err != nil {
+		constants.PrintWithColor(constants.Red, err.Error())
 		flag.Usage()
-		return "", "",fmt.Errorf(err.Error())
+		return "", "",err
 	}
 	return subdomain, localhostUrl, nil
 }
@@ -42,19 +46,19 @@ func FlagValidation() (string, string, error) {
 
 
 func ValidateSubdomain(subdomain string) error {
+	if subdomain == "www" || subdomain==""{
+		return fmt.Errorf("invalid subdomain")
+	}
+
 	for _, letterRune := range subdomain {
-		if !unicode.IsLetter(letterRune) {
-			constants.PrintWithColor(constants.Red, "the subdomain contains invalid characters")
+		if !unicode.IsLetter(letterRune) && !unicode.IsNumber(letterRune) {
 			return fmt.Errorf("the subdomain contains invalid characters")
 		}
 	}
-	if strings.ToLower(subdomain) == "www" {
-		constants.PrintWithColor(constants.Red, "invalid subdomain")
-		fmt.Println("invalid subdomain")
-		return fmt.Errorf("invalid subdomain")
-	}
+
 	return nil
 }
+
 
 
 func printSkipperStart() {
