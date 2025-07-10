@@ -5,7 +5,947 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skipper - Tunnel & Reverse Proxy</title>
     <link rel="icon" type="image/png" href="https://pub-f0e906fcf8d54ea98e4cbbd15a55e147.r2.dev/skipperlogo.png">
+<<<<<<< Updated upstream
     <link rel="stylesheet" href="/static/css/index.css">
+=======
+    <style>
+        :root {
+            --primary-blue: #0066cc;
+            --text-color: #333333;
+            --bg-color: #ffffff;
+            --nav-bg: #f8f9fa;
+            --section-bg: #ffffff;
+            --hover-blue: #0052a3;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Animation for sections */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .nav-container {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 250px;
+            background-color: var(--nav-bg);
+            padding: 2rem 1rem;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .nav-logo img {
+            max-width: 120px;
+            height: auto;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-menu a {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            position: relative;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-menu a:hover {
+            background-color: var(--primary-blue);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-menu a.active {
+            background-color: var(--primary-blue);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+        }
+
+        .nav-menu a.active::before {
+            content: '';
+            position: absolute;
+            left: -1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 20px;
+            background-color: white;
+            border-radius: 2px;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .logo-container {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .logo {
+            max-width: 120px;
+            height: auto;
+        }
+
+        h1 {
+            background: linear-gradient(135deg, var(--primary-blue), #0052a3, #667eea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .description {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .author {
+            font-style: italic;
+            margin-bottom: 2rem;
+        }
+
+        .contact-links {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: transform 0.3s ease;
+        }
+
+        .contact-link:hover {
+            transform: translateY(-2px);
+        }
+
+        .contact-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .star-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #24292e;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-left: 1rem;
+        }
+
+        .star-button:hover {
+            transform: translateY(-2px);
+            background: #2c3238;
+        }
+
+        .star-icon {
+            animation: twinkle 1.5s infinite;
+        }
+
+        @keyframes twinkle {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* GitHub branding for contribute section */
+        .github-branding {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .github-logo {
+            width: 48px;
+            height: 48px;
+            fill: white;
+        }
+
+        .github-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .github-stat {
+            background: rgba(255,255,255,0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .github-link {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .github-link:hover {
+            text-decoration: underline;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-blue), #0052a3, #667eea);
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            transition: all 0.3s ease;
+        }
+
+        h2 {
+            background: linear-gradient(135deg, var(--primary-blue), #0052a3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            scroll-margin-top: 2rem;
+            position: relative;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-blue), #0052a3);
+            border-radius: 2px;
+        }
+
+        .code-block {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            position: relative;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+
+        .code-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
+        }
+
+        .code-block code {
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, var(--primary-blue), #0052a3);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+
+        .copy-button:hover {
+            background: linear-gradient(135deg, #0052a3, var(--primary-blue));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 102, 204, 0.4);
+        }
+
+        .usage-example {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #e9ecef;
+            border-radius: 4px;
+        }
+
+        .flag {
+            color: var(--primary-blue);
+            font-weight: 500;
+        }
+
+        .note {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .platform-badges {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .platform-badge {
+            padding: 0.5rem 1rem;
+            background-color: var(--primary-blue);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .architecture-diagram {
+            max-width: 100%;
+            height: auto;
+            margin: 2rem 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .contribute-section {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .contribute-section h3 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .contribute-section a {
+            color: var(--primary-blue);
+            text-decoration: none;
+        }
+
+        .contribute-section a:hover {
+            text-decoration: underline;
+        }
+
+        /* Future Changes Section */
+        .future-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-left: 4px solid var(--primary-blue);
+            padding: 2.5rem;
+        }
+
+        .future-section h2 {
+            color: var(--primary-blue);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card h3 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Contribute Section */
+        .contribute-section {
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+            color: white;
+            padding: 3rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+
+        .contribute-section h2 {
+            color: white !important;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+            -webkit-text-fill-color: white !important;
+            background: none !important;
+        }
+
+        .contribute-section h3 {
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .contribute-section p {
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 1.5rem;
+        }
+
+        .contribute-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .contribute-section li {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .contribute-section li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .contribute-section a {
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            transition: border-color 0.3s ease;
+        }
+
+        .contribute-section a:hover {
+            border-color: white;
+        }
+
+        .github-button {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .github-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Responsive styles */
+        @media screen and (max-width: 768px) {
+            .nav-container {
+                transform: translateX(-100%);
+            }
+
+            .nav-container.active {
+                transform: translateX(0);
+            }
+
+            .mobile-menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            /* Add overlay when menu is open */
+            .nav-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .nav-overlay.active {
+                display: block;
+                opacity: 1;
+            }
+
+            .contact-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .star-button {
+                margin-left: 0;
+                margin-top: 1rem;
+            }
+
+            .section {
+                padding: 2rem 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            h2 {
+                font-size: 2rem;
+            }
+
+            .gallery-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .gallery-image {
+                height: 200px;
+            }
+
+            .photo-gallery {
+                padding: 1.5rem;
+                margin: 2rem 0;
+            }
+
+            .downloads-table {
+                font-size: 0.9rem;
+            }
+
+            .downloads-table th,
+            .downloads-table td {
+                padding: 0.75rem;
+            }
+
+            .contribute-section {
+                padding: 1.5rem;
+            }
+
+            .github-stats {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .github-stat {
+                width: 100%;
+                text-align: center;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .feature-item {
+                padding: 1.5rem;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .gallery-container {
+                grid-template-columns: 1fr;
+            }
+
+            .gallery-image {
+                height: 250px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .section {
+                padding: 1.5rem 1rem;
+            }
+        }
+
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            display: none;
+        }
+
+        /* Photo Gallery Styles */
+        .photo-gallery {
+            margin: 4rem 0;
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+        }
+
+        .gallery-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 16px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border: 3px solid rgba(255,255,255,0.2);
+        }
+
+        .gallery-image:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .gallery-caption {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255,255,255,0.95);
+            color: var(--text-color);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .gallery-caption h3 {
+            margin: 0 0 1rem 0;
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--primary-blue), #0052a3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .gallery-caption p {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Mobile Slider Styles */
+        @media screen and (max-width: 768px) {
+            .gallery-container {
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none; /* IE and Edge */
+                gap: 0;
+                padding: 0;
+            }
+
+            .gallery-container::-webkit-scrollbar {
+                display: none; /* Chrome, Safari, Opera */
+            }
+
+            .gallery-image {
+                min-width: 100%;
+                scroll-snap-align: start;
+                border-radius: 0;
+                height: 300px;
+            }
+
+            .gallery-caption {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(transparent, rgba(0,0,0,0.8));
+                border-radius: 0;
+            }
+        }
+
+        .dedication {
+            font-style: italic;
+            color: #666;
+            margin: 1rem 0;
+            padding: 1rem;
+            border-left: 4px solid var(--primary-blue);
+            background: rgba(0,102,204,0.05);
+        }
+
+        /* Video Demo Section */
+        .video-demo {
+            margin: 3rem 0;
+            text-align: center;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 450px;
+            border: none;
+        }
+
+        .demo-caption {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: linear-gradient(to right, var(--primary-blue), #0052a3);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .demo-caption h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.5rem;
+        }
+
+        .demo-caption p {
+            margin: 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Downloads Table Styles */
+        .downloads-table {
+            margin: 2rem 0;
+            overflow-x: auto;
+        }
+
+        .downloads-table table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .downloads-table th {
+            background: var(--primary-blue);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .downloads-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .downloads-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .downloads-table a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+        }
+
+        .downloads-table a:hover {
+            text-decoration: underline;
+        }
+
+        .github-releases {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .github-releases a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .github-releases a:hover {
+            text-decoration: underline;
+        }
+
+        /* Features Grid Styles */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-item {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.8);
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+        }
+
+        .feature-item h3 {
+            color: var(--primary-blue);
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .feature-item ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-item li {
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .feature-item li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--primary-blue);
+            font-weight: bold;
+        }
+
+        .feature-item strong {
+            color: var(--text-color);
+            font-weight: 600;
+        }
+    </style>
+>>>>>>> Stashed changes
 </head>
 <body>
     <button class="mobile-menu-toggle" onclick="toggleMenu()" aria-label="Toggle navigation menu">
@@ -16,17 +956,18 @@
     <div class="nav-overlay" onclick="toggleMenu()"></div>
     <nav class="nav-container">
         <ul class="nav-menu">
+            <li><a href="#home">Intro</a></li>
+            <li><a href="#demo">Demo</a></li>
             <li><a href="#installation">Installation</a></li>
             <li><a href="#usage">Usage</a></li>
             <li><a href="#how-it-works">How It Works</a></li>
-            <li><a href="#future">Future Changes</a></li>
             <li><a href="#contribute">Contribute</a></li>
         </ul>
     </nav>
 
     <main class="main-content">
         <div class="container">
-            <header>
+            <header id="home">
                 <div class="logo-container">
                     <img src="https://pub-f0e906fcf8d54ea98e4cbbd15a55e147.r2.dev/skipperlogo.png" alt="Skipper Logo" class="logo">
                 </div>
@@ -35,11 +976,6 @@
                     A powerful tunnel and reverse proxy that allows you to expose your localhost projects to the internet through a subdomain. 
                     Simple, fast, and secure - your local development environment, accessible from anywhere.
                 </p>
-                <div class="platform-badges">
-                    <span class="platform-badge">macOS</span>
-                    <span class="platform-badge">Linux</span>
-                    <span class="platform-badge">Windows</span>
-                </div>
                 <p class="author">
                     Made with ❤️ by Juan Diego Diaz, a passionate backend and low-level learner developer
                 </p>
@@ -85,32 +1021,97 @@
                 </div>
                 <div class="gallery-caption">
                     <h3>Meet Skipper</h3>
-                    <p>Skipper: looks cute, contributes nothing to the repo</p>
+                    <p>looks cute, contributes nothing to the repo</p>
+                </div>
+            </section>
+
+            <!-- Video Demo Section -->
+            <section id="demo" class="section video-demo">
+                <h2>How to Use Skipper</h2>
+                <div class="video-container">
+                    <div style="position: relative; padding-bottom: 56.25%; height: 0;">
+                        <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" 
+                                src="https://www.tella.tv/video/cmctzlhmg00120bkza8mk1mo6/embed?b=1&title=1&a=1&loop=0&t=0&muted=0&wt=1" 
+                                allowfullscreen 
+                                allowtransparency>
+                        </iframe>
+                    </div>
+                </div>
+                <div class="demo-caption">
+                    <h3>Quick Demo</h3>
+                    <p>Watch how easy it is to expose your localhost projects with Skipper</p>
                 </div>
             </section>
 
             <section id="installation" class="section">
                 <h2>Installation</h2>
                 
-                <h3>Using Homebrew (macOS)</h3>
+                <h3>Package Managers</h3>
+                
+                <h4>Using Homebrew (macOS)</h4>
                 <div class="code-block">
-                    <button class="copy-button" onclick="copyToClipboard('brew tap juandi247/skipper')">Copy</button>
+                    <button class="copy-button" onclick="copyToClipboard('brew tap juandi247/skipper', this)">Copy</button>
                     <code>brew tap juandi247/skipper</code>
                 </div>
                 <div class="code-block">
-                    <button class="copy-button" onclick="copyToClipboard('brew install skipper')">Copy</button>
+                    <button class="copy-button" onclick="copyToClipboard('brew install skipper', this)">Copy</button>
                     <code>brew install skipper</code>
                 </div>
                 <div class="code-block">
-                    <button class="copy-button" onclick="copyToClipboard('brew upgrade skipper')">Copy</button>
+                    <button class="copy-button" onclick="copyToClipboard('brew upgrade skipper', this)">Copy</button>
                     <code>brew upgrade skipper</code>
                 </div>
                 <p class="note">Run this command to update to the latest version when new releases are available.</p>
 
-                <h3>Using Chocolatey (Windows)</h3>
+                <h4>Using Chocolatey (Windows)</h4>
                 <div class="code-block">
-                    <button class="copy-button" onclick="copyToClipboard('choco install skipper')">Copy</button>
+                    <button class="copy-button" onclick="copyToClipboard('choco install skipper', this)">Copy</button>
                     <code>choco install skipper</code>
+                </div>
+                <p class="note" style="color: #ff6b35; font-weight: 500;">⚠️ Pending for approval</p>
+
+                <h3>Direct Downloads</h3>
+                <p>Download the latest version (v0.0.7) directly for your platform: (Remember to add it to the PATH)</p>
+                
+                <div class="downloads-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Platform</th>
+                                <th>Download Link</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Linux AMD64</td>
+                                <td><a href="https://github.com/juandi247/Skipper/releases/download/v0.0.7/skipper_0.0.7_linux_amd64.tar.gz" target="_blank">skipper_0.0.7_linux_amd64.tar.gz</a></td>
+                            </tr>
+                            <tr>
+                                <td>Linux ARM64</td>
+                                <td><a href="https://github.com/juandi247/Skipper/releases/download/v0.0.7/skipper_0.0.7_linux_arm64.tar.gz" target="_blank">skipper_0.0.7_linux_arm64.tar.gz</a></td>
+                            </tr>
+                            <tr>
+                                <td>Windows AMD64</td>
+                                <td><a href="https://github.com/juandi247/Skipper/releases/download/v0.0.7/skipper_0.0.7_windows_amd64.tar.gz" target="_blank">skipper_0.0.7_windows_amd64.tar.gz</a></td>
+                            </tr>
+                            <tr>
+                                <td>Windows ARM64</td>
+                                <td><a href="https://github.com/juandi247/Skipper/releases/download/v0.0.7/skipper_0.0.7_windows_arm64.tar.gz" target="_blank">skipper_0.0.7_windows_arm64.tar.gz</a></td>
+                            </tr>
+                            <tr>
+                                <td>macOS AMD64</td>
+                                <td><a href="https://github.com/juandi247/Skipper/releases/download/v0.0.7/skipper_0.0.7_darwin_amd64.tar.gz" target="_blank">skipper_0.0.7_darwin_amd64.tar.gz</a></td>
+                            </tr>
+                            <tr>
+                                <td>macOS ARM64 (M1)</td>
+                                <td><a href="https://github.com/juandi247/Skipper/releases/download/v0.0.7/skipper_0.0.7_darwin_arm64.tar.gz" target="_blank">skipper_0.0.7_darwin_arm64.tar.gz</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="github-releases">
+                    <p>📦 <a href="https://github.com/juandi247/Skipper/releases/latest" target="_blank">View all releases on GitHub</a></p>
                 </div>
             </section>
 
@@ -119,8 +1120,8 @@
                 <p>Getting started with Skipper is as simple as running a single command:</p>
                 
                 <div class="code-block">
-                    <button class="copy-button" onclick="copyToClipboard('skipper start -p 3000 -s myapp')">Copy</button>
-                    <code>skipper start -p 3000 -s myapp</code>
+                    <button class="copy-button" onclick="copyToClipboard('skipper -port 3000 -subdomain myapp', this)">Copy</button>
+                    <code>skipper -port 3000 -subdomain myapp</code>
                 </div>
 
                 <div class="usage-example">
@@ -128,32 +1129,58 @@
                     <code>https://myapp.skipper.lat</code>
                 </div>
 
-                <p>You can also use the full flag names:</p>
-                <div class="code-block">
-                    <button class="copy-button" onclick="copyToClipboard('skipper start --port 3000 --subdomain myapp')">Copy</button>
-                    <code>skipper start --port 3000 --subdomain myapp</code>
-                </div>
-
                 <p class="note">
-                    <span class="flag">-p, --port</span>: The port where your local application is running<br>
-                    <span class="flag">-s, --subdomain</span>: The subdomain you want to use (will be available at subdomain.skipper.lat)
+                    <span class="flag">-port</span>: The port where your local application is running<br>
+                    <span class="flag">-subdomain</span>: The subdomain you want to use (will be available at subdomain.skipper.lat)
                 </p>
             </section>
 
             <section id="how-it-works" class="section">
                 <h2>How It Works</h2>
-                <p>Skipper operates through a sophisticated architecture running on Google Cloud:</p>
+                <p>Skipper operates through a sophisticated architecture running on Google Cloud with advanced Go patterns:</p>
                 
                 <div class="architecture-diagram">
                     <!-- Add your architecture diagram here -->
                     <!-- <img src="/assets/architecture.svg" alt="Skipper Architecture" style="width: 100%;"> -->
                 </div>
 
-                <p>The system consists of two main components:</p>
-                <ul>
-                    <li><strong>HTTP Server:</strong> Handles incoming web requests and routes them based on subdomains</li>
-                    <li><strong>TCP Server:</strong> Manages secure tunnels between the cloud and your local machine</li>
-                </ul>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <h3>🚀 Core Architecture</h3>
+                        <ul>
+                            <li><strong>TCP Persistent Connection:</strong> Bidirectional communication between proxy and tunnel</li>
+                            <li><strong>Custom Framing Protocol:</strong> 20-byte binary header for efficient message routing</li>
+                            <li><strong>Stream Multiplexing:</strong> Multiple flows over single TCP connection</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-item">
+                        <h3>🧠 Concurrency Patterns</h3>
+                        <ul>
+                            <li><strong>Worker Pools:</strong> Efficient concurrent task management</li>
+                            <li><strong>Fan-In/Fan-Out:</strong> Dynamic message distribution patterns</li>
+                            <li><strong>Reactor Pattern:</strong> Message dispatching by type and StreamID</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-item">
+                        <h3>🎛️ State Machine Design</h3>
+                        <ul>
+                            <li><strong>Functional FSM:</strong> Tunnel as concurrent state machine</li>
+                            <li><strong>Graceful Shutdown:</strong> Controlled resource cleanup with context</li>
+                            <li><strong>Error Handling:</strong> Robust state transitions and recovery</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-item">
+                        <h3>📦 Protocol & Serialization</h3>
+                        <ul>
+                            <li><strong>Protocol Buffers:</strong> Compact, fast serialization</li>
+                            <li><strong>Go Idioms:</strong> Context, select, interfaces</li>
+                            <li><strong>Extensible Design:</strong> Decoupled handlers for testing</li>
+                        </ul>
+                    </div>
+                </div>
 
                 <p>When you start Skipper:</p>
                 <ol>
@@ -163,38 +1190,6 @@
                     <li>Your local application processes the request and sends the response back through the tunnel</li>
                     <li>The response is delivered to the end user through the HTTP server</li>
                 </ol>
-            </section>
-
-            <section id="future" class="section future-section">
-                <h2>Future Changes</h2>
-                <p>We're constantly working to improve Skipper. Here's what's coming next:</p>
-                
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h3>Protocol Buffers</h3>
-                        <p>Implementation of Protocol Buffers for more efficient and type-safe communication between services.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>WebSocket Support</h3>
-                        <p>Full WebSocket support for real-time bidirectional communication through your tunnels.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>Server-Sent Events</h3>
-                        <p>Native support for SSE, enabling efficient server-to-client streaming.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>Request Dashboard</h3>
-                        <p>Real-time monitoring dashboard to track and analyze requests to your subdomains.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>Connection Management</h3>
-                        <p>Enhanced connection handling with automatic reconnection and load balancing.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>Custom Domains</h3>
-                        <p>Support for custom domains with automatic SSL certificate management.</p>
-                    </div>
-                </div>
             </section>
 
             <section id="contribute" class="section contribute-section">
@@ -227,15 +1222,51 @@
     </main>
 
     <script>
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                const button = event.target;
-                const originalText = button.textContent;
-                button.textContent = 'Copied!';
-                setTimeout(() => {
-                    button.textContent = originalText;
-                }, 2000);
-            });
+        function copyToClipboard(text, buttonElement) {
+            // Modern clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showCopyFeedback(buttonElement);
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    fallbackCopyTextToClipboard(text, buttonElement);
+                });
+            } else {
+                // Fallback for older browsers or non-secure contexts
+                fallbackCopyTextToClipboard(text, buttonElement);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text, buttonElement) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showCopyFeedback(buttonElement);
+            } catch (err) {
+                console.error('Fallback copy failed: ', err);
+                alert('Failed to copy text. Please copy manually: ' + text);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        function showCopyFeedback(buttonElement) {
+            const originalText = buttonElement.textContent;
+            buttonElement.textContent = 'Copied!';
+            buttonElement.style.backgroundColor = '#28a745';
+            
+            setTimeout(() => {
+                buttonElement.textContent = originalText;
+                buttonElement.style.backgroundColor = '';
+            }, 2000);
         }
 
         // Smooth scrolling for navigation
@@ -283,6 +1314,40 @@
                 }
             }
         });
+
+        // Scroll spy functionality
+        function updateActiveNavLink() {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-menu a');
+            
+            let current = '';
+            
+            // Check if we're at the top of the page (Intro section)
+            if (window.pageYOffset < 200) {
+                current = 'home';
+            } else {
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (window.pageYOffset >= (sectionTop - 200)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+            }
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Add scroll event listener
+        window.addEventListener('scroll', updateActiveNavLink);
+        
+        // Initialize active state on page load
+        document.addEventListener('DOMContentLoaded', updateActiveNavLink);
     </script>
 </body>
 </html>
