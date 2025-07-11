@@ -72,7 +72,7 @@ func ClosureFunc(tm tunnel.TunnelManager) http.HandlerFunc {
 			io.Copy(w, bodyReader)
 
 		case <-time.After(time.Second * 10):
-			http.ServeFile(w, r, "template/timeout.html")
+			http.ServeFile(w, r, "templates/timeout.html")
 		}
 
 	}
