@@ -18,7 +18,7 @@ func StartReactor(ctx context.Context, conn net.Conn, errChan chan error, reques
 				return
 			default:
 				errChan<-err
-				fmt.Println("error reading the proxy packet", err)
+				// fmt.Println("error reading the proxy packet", err)
 				return
 			}
 		}
