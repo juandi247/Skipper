@@ -2,6 +2,7 @@ package tunnel
 
 import (
 	"SkipperTunnel/constants"
+	"SkipperTunnel/dashboard"
 	skipperflag "SkipperTunnel/flags"
 	"SkipperTunnel/forward"
 	"SkipperTunnel/proxy"
@@ -94,6 +95,10 @@ func (t *Tunnel) HandleActiveTunnel() FsmFunc {
 
 	go proxy.StartReactor(t.Ctx, t.ProxyConn, t.ErrChan, t.RequestChan, t.syncPool)
 
+	srv:= dashboard.NewDashboardServer()
+	go dashboard.StartDashboard(srv, t.Ctx, t.ErrChan)
+
+	
 	fmt.Print("You can now visit the page:")
 	mainDomain := fmt.Sprintf(" %v.skipper.lat \n", t.Subdomain)
 	constants.PrintWithColor(constants.Cyan, mainDomain)
