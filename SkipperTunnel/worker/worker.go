@@ -16,7 +16,7 @@ import (
 )
 
 // this worker would contain all the logic of the requestss
-func Worker(ctx context.Context, proxyConn net.Conn, reactorChan chan *frame.InternalFrame, localhostUrl string) {
+func Worker(ctx context.Context, proxyConn net.Conn, reactorChan chan *frame.InternalFrame, localhostUrl string, dashboardRequestChan chan *http.Request) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -47,6 +47,9 @@ func Worker(ctx context.Context, proxyConn net.Conn, reactorChan chan *frame.Int
 			httpClient:= &http.Client{
 				 Timeout: time.Second*5,
 			}
+
+			dashboardRequestChan <- request
+			
 			httpResponse, err:= httpClient.Do(request)
 			if err != nil {
 				constants.PrintWithColor(constants.Red, "error executing request " + err.Error() )

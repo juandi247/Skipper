@@ -10,25 +10,34 @@ import (
 	"time"
 )
 
-func NewDashboardServer() *http.Server {
+type DashboardServer struct{
+	srv *http.Server
+	requestChan chan *http.Request
+}
+
+func NewDashboardServer(requestChan chan *http.Request) *DashboardServer {
 	tmux := http.NewServeMux()
 	tmux.HandleFunc("/", DashboardHandler)
-	return &http.Server{
-		Handler: tmux,
+
+	return &DashboardServer{
+		srv: &http.Server{
+			Handler: tmux,
+		},
+		requestChan: requestChan,
 	}
 }
 
-func StartDashboard(srv *http.Server, ctx context.Context, errChan chan error) {
+func (d *DashboardServer)StartDashboard(ctx context.Context, errChan chan error) {
 	port, err := checkPorts()
 	if err != nil {
 		return
 	}
-	srv.Addr = ":" + port
+	d.srv.Addr = ":" + port
 
-	defer srv.Shutdown(ctx)
+	defer d.srv.Shutdown(ctx)
 
 	go func() {
-		srv.ListenAndServe()
+		d.srv.ListenAndServe()
 		if err != nil {
 			errChan<- err
 			return
@@ -40,7 +49,7 @@ func StartDashboard(srv *http.Server, ctx context.Context, errChan chan error) {
 }
 
 func DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("HPLA vamos a tener nuestro coso"))
+	http.ServeFile(w, r, "templates/dashboard.html")
 }
 
 func checkPorts() (string, error) {
@@ -57,6 +66,6 @@ func checkPorts() (string, error) {
 	}
 
 	fmt.Print("You can see the request dashboard on: ")
-	constants.PrintWithColor(constants.Cyan, "localhost:"+strconv.Itoa(port))
+	constants.PrintWithColor(constants.Cyan, "http://localhost:"+strconv.Itoa(port))
 	return strconv.Itoa(port), nil
 }

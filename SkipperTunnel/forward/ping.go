@@ -2,7 +2,6 @@ package forward
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"time"
 )

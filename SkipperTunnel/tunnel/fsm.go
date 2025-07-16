@@ -9,6 +9,7 @@ import (
 	"SkipperTunnel/worker"
 	"fmt"
 	"net"
+	"net/http"
 	"time"
 )
 
@@ -86,17 +87,20 @@ func (t *Tunnel) HandleProxyConnection() FsmFunc {
 }
 
 func (t *Tunnel) HandleActiveTunnel() FsmFunc {
+	dsReqChan:= make(chan *http.Request, 1)
+	t.DashboardRequestChan= dsReqChan
+	ds:= dashboard.NewDashboardServer(dsReqChan)
+	go ds.StartDashboard(t.Ctx, t.ErrChan)
+
+
 	go forward.PingLocalhost(t.Ctx, t.LocalhostUrl, t.ErrChan)
 
 	// todo: check number of goroutines
 	for i := 0; i <= 35000; i++ {
-		go worker.Worker(t.Ctx, t.ProxyConn, t.RequestChan, t.LocalhostUrl)
+		go worker.Worker(t.Ctx, t.ProxyConn, t.RequestChan, t.LocalhostUrl, t.DashboardRequestChan)
 	}
 
 	go proxy.StartReactor(t.Ctx, t.ProxyConn, t.ErrChan, t.RequestChan, t.syncPool)
-
-	srv:= dashboard.NewDashboardServer()
-	go dashboard.StartDashboard(srv, t.Ctx, t.ErrChan)
 
 	
 	fmt.Print("You can now visit the page:")
