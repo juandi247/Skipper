@@ -48,7 +48,7 @@ func Worker(ctx context.Context, proxyConn net.Conn, reactorChan chan *frame.Int
 				 Timeout: time.Second*5,
 			}
 
-			dashboardRequestChan <- request
+			// dashboardRequestChan <- request
 			
 			httpResponse, err:= httpClient.Do(request)
 			if err != nil {
