@@ -12,12 +12,15 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: go to folder
+        run: cd SkipperProxy
         
       - name: Run tests
-        run: go test -v ./SkipperProxy
+        run: go test -v ./...
 
       # - name: Build binary
-      #   run: go build -o Proxy ./SkipperProxy
+      #   run: go build -o Proxy
 
       # - name: Restart service
       #   run: sudo systemctl restart skipper.service
