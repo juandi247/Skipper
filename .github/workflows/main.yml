@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - tigerstyle-rewrite
+      - main
     paths:
       - 'SkipperProxy/**'
   workflow_dispatch:
