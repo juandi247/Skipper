@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'SkipperProxy/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: [self-hosted,proxy-runner-vm]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        
+      - name: Run tests
+        run: go test -v ./SkipperProxy
+
+      # - name: Build binary
+      #   run: go build -o Proxy ./SkipperProxy
+
+      # - name: Restart service
+      #   run: sudo systemctl restart skipper.service
