@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted,proxy-runner-vm]
+    runs-on: self-hosted
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
