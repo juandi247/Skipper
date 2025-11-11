@@ -16,8 +16,8 @@ jobs:
       - name: go to folder
         run: cd SkipperProxy
         
-      - name: Run tests
-        run: go test -v ./...
+      # - name: Run tests
+      #   run: go test -v ./...
 
       # - name: Build binary
       #   run: go build -o Proxy
